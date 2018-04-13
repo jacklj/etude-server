@@ -1,0 +1,11 @@
+{
+  "name": "singprocess-server",
+  "version": "1.0.0",
+  "description": "Server for sing-process",
+  "main": "server.js",
+  "author": "Jack Lawrence-Jones <jackvlj@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
