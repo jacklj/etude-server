@@ -4,13 +4,15 @@ Software to structure and track singing activities:
 #### Lessons
    - plan for lessons
    - write, structure and store lesson notes
+   - store lesson recordings, highlight sections
+   - notes refer to specific times/durations in recordings
 
 #### Practice
   - track practice
   - plan practice
   - see current key technical ideas, linked to the lessons they came from
   - see what pieces you should be working on, track what you do
-  
+
 #### Projects
    - plan for upcoming performances
    - enter required repertoire
