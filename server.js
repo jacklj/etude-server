@@ -11,3 +11,8 @@ http.listen(port, function(){
 app.get('/', function (req, res) {
   res.send("__singprocess server running__");
 });
+
+app.route('/practice_session')
+  .post(function(req, res) {
+    res.send('Add a practice session');
+  });
