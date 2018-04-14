@@ -17,6 +17,11 @@ app.get('/', function (req, res) {
 });
 
 app.route('/practice_session')
+  .get(function(req, res) {
+    // return all practice_sessions
+    knex('practice_sessions').select()
+      .then(practiceSessions => res.status(200).json(practiceSessions));
+  })
   .post(function(req, res) {
     // add new practice session
     const newPracticeSession = req.body;
