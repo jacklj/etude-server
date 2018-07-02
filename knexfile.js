@@ -5,7 +5,7 @@ module.exports = {
     connection: {
       database: 'singprocess'
     },
-    debug: true
+    debug: false
   },
   production: {
     client: 'postgresql',
