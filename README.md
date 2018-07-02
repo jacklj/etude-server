@@ -1,5 +1,12 @@
 # singprocess
-Software to structure and track singing activities:
+Software to structure and track singing activities.
+
+## singprocess-server
+Node, express.
+
+`yarn start`
+
+## what will singprocess be able to do?
 
 #### Lessons
    - plan for lessons
@@ -8,10 +15,11 @@ Software to structure and track singing activities:
    - notes refer to specific times/durations in recordings
 
 #### Practice
-  - track practice
+  - track practice - when, how long, what you do
   - plan practice
-  - see current key technical ideas, linked to the lessons they came from
-  - see what pieces you should be working on, track what you do
+  - see current key technical ideas, linked to the lessons/masterclasses they came from. Visible during practice - mark that you're focussing on them
+  - see what pieces you should be working on
+
 
 #### Projects
    - plan for upcoming performances
@@ -19,6 +27,6 @@ Software to structure and track singing activities:
    - break down different preparation stages, e.g. translation, learning, singing in, performing
    - ... and track progress on each stage
 
-
-## singprocess-server
-Node, express.
+#### Masterclasses, concerts, other events
+   - enter them into your diary stream
+   - add notes, recordings, etc
