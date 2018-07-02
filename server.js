@@ -3,9 +3,11 @@ var app = express();
 var http = require('http').Server(app);
 var knex = require('./db/knex.js');
 var bodyParser = require('body-parser');
+var cors = require('cors')
 
 const port = process.env.PORT || 8080;
 
+app.use(cors());
 app.use(bodyParser.json());
 
 http.listen(port, function(){
