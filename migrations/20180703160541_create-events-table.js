@@ -73,9 +73,9 @@ exports.down = function(knex, Promise) {
     .dropTable('repertoire_item')
     .dropTable('repertoire')
     .dropTable('exercise_item')
-    .dropTable('exercise')
+    .dropTable('exercises')
     .dropTable('people')
-    .dropTable('notes')
     .dropTable('items')
-    .dropTable('events');
+    .dropTable('events')
+    .dropTable('locations');
 };
