@@ -41,5 +41,10 @@ exports.seed = function(knex, Promise) {
         surname: 'Donizetti ',
         role: 'Composer',
       },
+      {
+        first_name: 'Benjamin',
+        surname: 'Britten ',
+        role: 'Composer',
+      },
     ]));
 };
