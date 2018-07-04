@@ -21,5 +21,25 @@ exports.seed = function(knex, Promise) {
         surname: 'Stranders',
         role: 'Coach',
       },
+      {
+        first_name: 'Wolfgang Amadeus',
+        surname: 'Mozart',
+        role: 'Composer',
+      },
+      {
+        first_name: 'Eric',
+        surname: 'Korngold',
+        role: 'Composer',
+      },
+      {
+        first_name: 'Richard',
+        surname: 'Wagner',
+        role: 'Composer',
+      },
+      {
+        first_name: 'Gaetano',
+        surname: 'Donizetti ',
+        role: 'Composer',
+      },
     ]));
 };
