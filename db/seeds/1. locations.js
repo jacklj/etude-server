@@ -13,6 +13,23 @@ exports.seed = function(knex, Promise) {
         website: 'http://www.ram.ac.uk/',
       },
       {
+        name: 'Neville Mariner Room, St Martin-in-the-Fields',
+        address_line_1: 'St Martin-in-the-Fields',
+        address_line_2: 'Trafalgar Square',
+        town_city: 'London',
+        postcode: 'WC2N 4JJ',
+        website: 'http://www.stmartin-in-the-fields.org/',
+      },
+      {
+        name: 'Blüthner Pianos',
+        address_line_1: 'Blüthner Pianos',
+        address_line_2: '6 Baker Street',
+        address_line_3: 'Marylebone',
+        town_city: 'London',
+        postcode: 'W1U 3AA',
+        website: 'http://www.bluthner.co.uk/',
+      },
+      {
         name: 'Home',
         address_line_1: '29 Tarbert Walk',
         town_city: 'London',
