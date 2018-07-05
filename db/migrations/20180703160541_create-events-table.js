@@ -1,3 +1,4 @@
+const EVENT_TYPES = require('../../constants.js').EVENT_TYPES;
 
 exports.up = function(knex, Promise) {
   return knex.schema
@@ -15,7 +16,15 @@ exports.up = function(knex, Promise) {
       table.increments('id').primary();
       table.dateTime('start');
       table.dateTime('end');
-      table.enu('type', ['Lesson', 'Practice', 'Masterclass', 'Concert', 'Opera', 'Recital', 'Other']);
+      table.enu('type', [
+        EVENT_TYPES.LESSON,
+        EVENT_TYPES.PRACTICE,
+        EVENT_TYPES.MASTERCLASS,
+        EVENT_TYPES.CONCERT,
+        EVENT_TYPES.OPERA,
+        EVENT_TYPES.RECITAL,
+        EVENT_TYPES.OTHER,
+      ]);
       table.string('name');
       table.integer('location_id').references('id').inTable('locations');
       table.integer('rating');
