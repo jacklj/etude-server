@@ -2,6 +2,7 @@ exports.seed = function(knex, Promise) {
   return knex('repertoire').del() // First delete *all* tables in correct order
     .then(() => knex('exercises').del())
     .then(() => knex('people').del())
+    .then(() => knex('events').del())
     .then(() => knex('locations').del())
     .then(() => knex('locations').insert([
       {
