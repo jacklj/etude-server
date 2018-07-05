@@ -44,5 +44,13 @@ exports.seed = function(knex, Promise) {
         postcode: 'HP14 3YG',
         website: 'http://www.garsingtonopera.org/',
       },
+      {
+        name: 'Practice rooms, Glyndebourne',
+        address_line_1: 'Glyndebourne',
+        address_line_2: 'Lewes',
+        address_line_3: 'East Sussex',
+        postcode: 'BN8 5UU',
+        website: 'http://www.glyndebourne.com/',
+      },
     ]));
 };

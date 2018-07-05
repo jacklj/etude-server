@@ -28,5 +28,13 @@ exports.seed = function(knex, Promise) {
       location_id: knex('locations').where({ name: 'Blüthner Pianos' }).select('id'),
       rating: 4,
     },
+    {
+      start: moment('18:00 5 July 2018'),
+      end: moment('18:30 5 July 2018'),
+      type: EVENT_TYPES.PRACTICE,
+      name: 'Practice at Glyndebourne',
+      location_id: knex('locations').where({ name: 'Practice rooms, Glyndebourne' }).select('id'),
+      rating: 3,
+    },
   ]);
 };
