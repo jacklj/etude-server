@@ -53,6 +53,7 @@ exports.up = function(knex, Promise) {
       table.increments('id').primary();
       table.string('name');
       table.text('details', 'longtext');
+      table.integer('teacher_who_created_it').references('id').inTable('people');
     })
     .createTable('repertoire_item', table => {
       table.increments('id').primary();
