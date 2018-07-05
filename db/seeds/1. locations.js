@@ -1,5 +1,7 @@
 exports.seed = function(knex, Promise) {
-  return knex('locations').del() // Deletes ALL existing entries
+  return knex('repertoire').del() // First delete *all* tables in correct order
+    .then(() => knex('people').del())
+    .then(() => knex('locations').del())
     .then(() => knex('locations').insert([
       {
         name: 'Royal Academy of Music',
