@@ -1,4 +1,5 @@
 const EVENT_TYPES = require('../../constants.js').EVENT_TYPES;
+const ITEM_TYPES = require('../../constants.js').ITEM_TYPES;
 
 exports.up = function(knex, Promise) {
   return knex.schema
@@ -42,7 +43,14 @@ exports.up = function(knex, Promise) {
     })
     .createTable('items', table => { // eg a piece of repertoire, an exercise, etc
       table.increments('id').primary();
-      table.enu('type', ['Piece', 'Exercise', 'Thought', 'Physical Exercise', 'General', 'Other']);
+      table.enu('type', [
+        ITEM_TYPES.PIECE,
+        ITEM_TYPES.EXERCISE,
+        ITEM_TYPES.THOUGHT,
+        ITEM_TYPES.PHYSICAL_EXERCISE,
+        ITEM_TYPES.GENERAL,
+        ITEM_TYPES.OTHER,
+      ]);
       table.integer('event_id').references('id').inTable('events');
     })
     .createTable('notes', table => {
