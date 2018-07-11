@@ -77,7 +77,7 @@ exports.up = function(knex, Promise) {
       table.integer('repertoire_id').references('id').inTable('repertoire');
       table.integer('item_id').references('id').inTable('items');
     })
-    .createTable('exercise_item', table => {
+    .createTable('exercise_items', table => {
       table.increments('id').primary();
       table.integer('exercise_id').references('id').inTable('exercises');
       table.integer('item_id').references('id').inTable('items');
@@ -90,7 +90,7 @@ exports.down = function(knex, Promise) {
     .dropTable('notes')
     .dropTable('repertoire_item')
     .dropTable('repertoire')
-    .dropTable('exercise_item')
+    .dropTable('exercise_items')
     .dropTable('exercises')
     .dropTable('people')
     .dropTable('items')
