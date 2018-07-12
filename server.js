@@ -41,3 +41,5 @@ app.route('/practice_sessions')
         res.status(200).json(result);
       });
   });
+
+  app.use(require('./routes/locations.js'));
