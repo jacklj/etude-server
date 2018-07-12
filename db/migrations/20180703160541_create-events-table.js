@@ -72,7 +72,7 @@ exports.up = function(knex, Promise) {
       table.text('details', 'longtext');
       table.integer('teacher_who_created_it').references('id').inTable('people');
     })
-    .createTable('repertoire_item', table => {
+    .createTable('repertoire_items', table => {
       table.increments('id').primary();
       table.integer('repertoire_id').references('id').inTable('repertoire');
       table.integer('item_id').references('id').inTable('items');
@@ -88,7 +88,7 @@ exports.down = function(knex, Promise) {
   return knex.schema
     .dropTable('people_at_events')
     .dropTable('notes')
-    .dropTable('repertoire_item')
+    .dropTable('repertoire_items')
     .dropTable('repertoire')
     .dropTable('exercise_items')
     .dropTable('exercises')
