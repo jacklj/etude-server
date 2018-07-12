@@ -43,3 +43,4 @@ app.route('/practice_sessions')
   });
 
   app.use(require('./routes/locations.js'));
+  app.use(require('./routes/events.js'));
