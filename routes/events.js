@@ -42,6 +42,7 @@ router.get('/api/events', function(req, res, next) {
           return knex('repertoire_items')
             .where({ item_id: item.id })
             .join('repertoire', 'repertoire_items.repertoire_id', 'repertoire.id')
+            .join('people', 'repertoire.composer', 'people.id')
             .first()
             .then(repertoire => {
               if (repertoire) {
@@ -51,6 +52,7 @@ router.get('/api/events', function(req, res, next) {
                 return knex('exercise_items')
                   .where({ item_id: item.id })
                   .join('exercises', 'exercise_items.exercise_id', 'exercises.id')
+                  .join('people', 'exercises.teacher_who_created_it', 'people.id')
                   .first()
                 }
             });
