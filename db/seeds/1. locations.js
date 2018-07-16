@@ -1,5 +1,6 @@
 exports.seed = function(knex, Promise) {
-  return knex('repertoire').del() // First delete *all* tables in correct order
+  return knex('repertoire_items').del() // First delete *all* tables in correct order
+    .then(() => knex('repertoire').del())
     .then(() => knex('exercises').del())
     .then(() => knex('people_at_events').del())
     .then(() => knex('people').del())
