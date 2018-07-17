@@ -1,6 +1,6 @@
 
-exports.seed = function(knex, Promise) {
-  return knex('repertoire').insert([
+exports.seed = (knex) => knex('repertoire')
+  .insert([
     {
       name: 'Mein Sehnen, mein Wähnen',
       composer: knex('people').where({ surname: 'Korngold' }).select('id'),
@@ -37,4 +37,3 @@ exports.seed = function(knex, Promise) {
       character_that_sings_it: 'Malatesta',
     },
   ]);
-};

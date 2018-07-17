@@ -1,5 +1,5 @@
-exports.seed = function(knex, Promise) {
-  return knex('people').insert([
+exports.seed = (knex) => knex('people')
+  .insert([
     {
       first_name: 'Alex',
       surname: 'Ashworth',
@@ -46,4 +46,3 @@ exports.seed = function(knex, Promise) {
       role: 'Composer',
     },
   ]);
-};

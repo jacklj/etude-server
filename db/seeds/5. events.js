@@ -1,14 +1,17 @@
-const moment = require('moment');
-const EVENT_TYPES = require('../../constants.js').EVENT_TYPES;
+import moment from 'moment';
 
-exports.seed = function(knex, Promise) {
-  return knex('events').insert([
+const { EVENT_TYPES } = require('../../constants.js'); // constants not transpiled
+
+exports.seed = (knex) => knex('events')
+  .insert([
     {
       start: moment('2018-06-25 17:00:00'),
       end: moment('2018-06-25 18:00:00'),
       type: EVENT_TYPES.LESSON,
       name: 'Alex Ashworth Lesson',
-      location_id: knex('locations').where({ name: 'Royal Academy of Music' }).select('id'),
+      location_id: knex('locations')
+        .where({ name: 'Royal Academy of Music' })
+        .select('id'),
       rating: 5,
     },
     {
@@ -16,7 +19,9 @@ exports.seed = function(knex, Promise) {
       end: moment('2018-06-28 13:00:00'),
       type: EVENT_TYPES.MASTERCLASS,
       name: 'Mary Dunleavy Masterclass Lesson',
-      location_id: knex('locations').where({ name: 'Neville Mariner Room, St Martin-in-the-Fields' }).select('id'),
+      location_id: knex('locations')
+        .where({ name: 'Neville Mariner Room, St Martin-in-the-Fields' })
+        .select('id'),
       rating: 5,
     },
     {
@@ -24,7 +29,9 @@ exports.seed = function(knex, Promise) {
       end: moment('2018-07-03 15:15:00'),
       type: EVENT_TYPES.LESSON,
       name: 'Mary Dunleavy Lesson',
-      location_id: knex('locations').where({ name: 'Blüthner Pianos' }).select('id'),
+      location_id: knex('locations')
+        .where({ name: 'Blüthner Pianos' })
+        .select('id'),
       rating: 4,
     },
     {
@@ -32,8 +39,9 @@ exports.seed = function(knex, Promise) {
       end: moment('2018-07-05 18:30:00'),
       type: EVENT_TYPES.PRACTICE,
       name: 'Practice at Glyndebourne',
-      location_id: knex('locations').where({ name: 'Practice rooms, Glyndebourne' }).select('id'),
+      location_id: knex('locations')
+        .where({ name: 'Practice rooms, Glyndebourne' })
+        .select('id'),
       rating: 3,
     },
   ]);
-};
