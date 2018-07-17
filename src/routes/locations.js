@@ -1,16 +1,16 @@
-const express = require('express');
+import express from 'express';
+import knex from '../knex';
 
-const knex = require('../../db/knex.js');
 const router = express.Router();
 
-router.get('/api/locations', function(req, res, next) {
+router.get('/api/locations', (req, res) => {
   knex('locations')
     .select()
     .then(events => res.status(200).json(events))
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });
 
-module.exports = router;
+export default router;

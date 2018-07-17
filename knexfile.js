@@ -1,26 +1,27 @@
+require('babel-register');
 
 module.exports = {
   development: {
     client: 'postgresql',
     connection: {
-      database: 'singprocess'
+      database: 'singprocess',
     },
     migrations: {
-      directory: __dirname + '/db/migrations',
+      directory: `${__dirname}/db/migrations`,
     },
     seeds: {
-      directory: __dirname + '/db/seeds',
+      directory: `${__dirname}/db/seeds`,
     },
     debug: false,
   },
   production: {
     client: 'postgresql',
-    connection: process.env.DATABASE_URL + '?ssl=true',
+    connection: `${process.env.DATABASE_URL}?ssl=true`,
     migrations: {
-      directory: __dirname + '/db/migrations',
+      directory: `${__dirname}/db/migrations`,
     },
     seeds: {
-      directory: __dirname + '/db/seeds',
+      directory: `${__dirname}/db/seeds`,
     },
   },
 };

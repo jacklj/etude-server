@@ -6,7 +6,7 @@ const EVENT_TYPES = {
   OPERA: 'EVENT_TYPES.OPERA',
   RECITAL: 'EVENT_TYPES.RECITAL',
   OTHER: 'EVENT_TYPES.OTHER',
-}
+};
 
 const ITEM_TYPES = {
   PIECE: 'ITEM_TYPES.PIECE',
@@ -19,5 +19,5 @@ const ITEM_TYPES = {
 
 module.exports = {
   EVENT_TYPES,
-  ITEM_TYPES
-}
+  ITEM_TYPES,
+};

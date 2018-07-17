@@ -1,35 +1,39 @@
-const express = require('express');
-const app = express();
-const http = require('http').Server(app);
-const bodyParser = require('body-parser');
-const cors = require('cors');
+import express from 'express';
+import HTTP from 'http';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import locationsRoutes from './routes/locations';
+import eventsRoutes from './routes/events';
+import knex from './knex';
 
-const knex = require('../db/knex.js');
+const app = express();
+const http = HTTP.Server(app);
 const port = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(bodyParser.json());
 
-http.listen(port, function(){
-  console.log(`hello.\nlistening on ${port}.`);
+http.listen(port, () => {
+  console.log(`hello.\nlistening on ${port}.`); // eslint-disable-line no-console
 });
 
-app.get('/', function (req, res) {
-  res.send("__singprocess server running__");
+app.get('/', (req, res) => {
+  res.send('__singprocess server running__');
 });
 
-app.route('/practice_sessions')
-  .get(function(req, res) {
+app
+  .route('/practice_sessions')
+  .get((req, res) => {
     // return all practice_sessions
     knex('practice_sessions')
       .select()
       .then(practiceSessions => res.status(200).json(practiceSessions))
       .catch(error => {
-        console.warn(error);
+        console.warn(error); // eslint-disable-line no-console
         res.status(400).json(error);
       });
   })
-  .post(function(req, res) {
+  .post((req, res) => {
     // add new practice session
     const newPracticeSession = req.body;
     knex('practice_sessions')
@@ -37,10 +41,10 @@ app.route('/practice_sessions')
       .insert(newPracticeSession)
       .then(resultArray => resultArray[0])
       .then(result => {
-        console.log(`New practice session created (id: ${result.id}, name: ${result.name})`);
+        console.log(`New practice session created (id: ${result.id}, name: ${result.name})`); // eslint-disable-line no-console
         res.status(200).json(result);
       });
   });
 
-  app.use(require('./routes/locations.js'));
-  app.use(require('./routes/events.js'));
+app.use(locationsRoutes);
+app.use(eventsRoutes);
