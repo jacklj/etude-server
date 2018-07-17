@@ -6,11 +6,23 @@
   "author": "Jack Lawrence-Jones <jackvlj@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "knex": "^0.14.6",
     "moment": "^2.22.2",
     "pg": "^7.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.1.0",
+    "eslint-config-airbnb": "^17.0.0"
+  },
+  "scripts": {
+    "clean": "rm -rf build && mkdir build",
+    "build-babel": "babel -d ./build ./src -s",
+    "build": "npm run clean && npm run build-babel",
+    "start": "npm run build && node ./build/server.js"
   }
 }

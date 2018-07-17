@@ -4,7 +4,7 @@ const http = require('http').Server(app);
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const knex = require('./db/knex.js');
+const knex = require('../db/knex.js');
 const port = process.env.PORT || 8080;
 
 app.use(cors());

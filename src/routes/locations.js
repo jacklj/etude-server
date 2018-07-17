@@ -1,6 +1,6 @@
 const express = require('express');
 
-const knex = require('../db/knex.js');
+const knex = require('../../db/knex.js');
 const router = express.Router();
 
 router.get('/api/locations', function(req, res, next) {
