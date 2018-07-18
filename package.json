@@ -27,6 +27,10 @@
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s",
     "build": "npm run clean && npm run build-babel",
-    "start": "npm run build && node ./build/server.js"
+    "start": "npm run build && node ./build/server.js",
+    "knex:seed:run": "npm run build && cd build && knex seed:run",
+    "knex:seed:make": "npm run build && cd build && knex seed:make",
+    "knex:migrate:latest": "npm run build && cd build && knex migrate:latest",
+    "knex:migrate:rollback": "npm run build && cd build && knex migrate:rollback"
   }
 }
