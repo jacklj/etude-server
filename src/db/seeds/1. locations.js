@@ -1,4 +1,4 @@
-exports.seed = (knex) => knex('repertoire_items')
+export const seed = (knex) => knex('repertoire_items') // eslint-disable-line import/prefer-default-export
   .del() // First delete *all* tables in correct order
   .then(() => knex('repertoire').del())
   .then(() => knex('exercise_items').del())

@@ -1,4 +1,4 @@
-exports.seed = (knex) => knex('people')
+export const seed = (knex) => knex('people') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       first_name: 'Alex',

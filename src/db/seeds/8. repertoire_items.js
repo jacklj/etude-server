@@ -1,6 +1,6 @@
-const { ITEM_TYPES } = require('../../constants.js');
+import { ITEM_TYPES } from '../../constants';
 
-exports.seed = (knex) => knex('repertoire_items')
+export const seed = (knex) => knex('repertoire_items') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       repertoire_id: knex('repertoire')

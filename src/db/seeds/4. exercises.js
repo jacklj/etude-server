@@ -1,4 +1,4 @@
-exports.seed = (knex) => knex('exercises')
+export const seed = (knex) => knex('exercises') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       name: 'Humming 5th scale',

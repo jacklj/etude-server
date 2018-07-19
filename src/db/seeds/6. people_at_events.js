@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-exports.seed = (knex) => knex('people_at_events')
+export const seed = (knex) => knex('people_at_events') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       event_id: knex('events')

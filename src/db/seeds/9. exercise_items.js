@@ -1,12 +1,13 @@
-const { ITEM_TYPES } = require('../../constants.js');
+import { ITEM_TYPES } from '../../constants';
 
-exports.seed = knex => knex('exercise_items').insert([
-  {
-    exercise_id: knex('exercises')
-      .where({ name: 'Humming 5th scale' })
-      .select('id'),
-    item_id: knex('items')
-      .where({ type: ITEM_TYPES.EXERCISE })
-      .first('id'),
-  },
-]);
+export const seed = knex => knex('exercise_items') // eslint-disable-line import/prefer-default-export
+  .insert([
+    {
+      exercise_id: knex('exercises')
+        .where({ name: 'Humming 5th scale' })
+        .select('id'),
+      item_id: knex('items')
+        .where({ type: ITEM_TYPES.EXERCISE })
+        .first('id'),
+    },
+  ]);

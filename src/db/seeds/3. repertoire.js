@@ -1,5 +1,4 @@
-
-exports.seed = (knex) => knex('repertoire')
+export const seed = (knex) => knex('repertoire') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       name: 'Mein Sehnen, mein Wähnen',

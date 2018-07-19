@@ -1,7 +1,7 @@
-const moment = require('moment');
-const { ITEM_TYPES } = require('../../constants.js');
+import moment from 'moment';
+import { ITEM_TYPES } from '../../constants';
 
-exports.seed = (knex) => knex('items')
+export const seed = (knex) => knex('items') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       type: ITEM_TYPES.PIECE,

@@ -1,8 +1,7 @@
 import moment from 'moment';
+import { EVENT_TYPES } from '../../constants';
 
-const { EVENT_TYPES } = require('../../constants.js'); // constants not transpiled
-
-exports.seed = (knex) => knex('events')
+export const seed = (knex) => knex('events') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       start: moment('2018-06-25 17:00:00'),
