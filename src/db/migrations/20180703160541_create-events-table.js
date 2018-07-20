@@ -89,6 +89,9 @@ exports.up = knex => knex.schema
   .createTable('exercises', table => {
     table.increments('id').primary();
     table.string('name');
+    table.text('score', 'longtext');
+    table.string('range_lowest_note');
+    table.string('range_highest_note');
     table.text('details', 'longtext');
     table
       .integer('teacher_who_created_it')
