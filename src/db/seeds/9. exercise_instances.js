@@ -1,6 +1,6 @@
 import { ITEM_TYPES } from '../../constants';
 
-export const seed = knex => knex('exercise_items') // eslint-disable-line import/prefer-default-export
+export const seed = knex => knex('exercise_instances') // eslint-disable-line import/prefer-default-export
   .insert([
     {
       exercise_id: knex('exercises')

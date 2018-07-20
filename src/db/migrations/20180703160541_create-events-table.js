@@ -99,7 +99,7 @@ exports.up = knex => knex.schema
       .references('id')
       .inTable('people');
   })
-  .createTable('repertoire_items', table => {
+  .createTable('repertoire_instances', table => {
     table.increments('id').primary();
     table
       .integer('repertoire_id')
@@ -110,7 +110,7 @@ exports.up = knex => knex.schema
       .references('id')
       .inTable('items');
   })
-  .createTable('exercise_items', table => {
+  .createTable('exercise_instances', table => {
     table.increments('id').primary();
     table
       .integer('exercise_id')
@@ -125,9 +125,9 @@ exports.up = knex => knex.schema
 exports.down = knex => knex.schema
   .dropTable('people_at_events')
   .dropTable('notes')
-  .dropTable('repertoire_items')
+  .dropTable('repertoire_instances')
   .dropTable('repertoire')
-  .dropTable('exercise_items')
+  .dropTable('exercise_instances')
   .dropTable('exercises')
   .dropTable('people')
   .dropTable('items')

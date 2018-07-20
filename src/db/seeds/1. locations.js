@@ -1,7 +1,7 @@
-export const seed = (knex) => knex('repertoire_items') // eslint-disable-line import/prefer-default-export
+export const seed = (knex) => knex('repertoire_instances') // eslint-disable-line import/prefer-default-export
   .del() // First delete *all* tables in correct order
   .then(() => knex('repertoire').del())
-  .then(() => knex('exercise_items').del())
+  .then(() => knex('exercise_instances').del())
   .then(() => knex('exercises').del())
   .then(() => knex('people_at_events').del())
   .then(() => knex('people').del())

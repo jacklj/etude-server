@@ -40,9 +40,9 @@ router.get('/api/events', (req, res) => {
           .where({ event_id: newEvent.id })
           .select()
           .then(items => Promise.all(
-            items.map(item => knex('repertoire_items')
+            items.map(item => knex('repertoire_instances')
               .where({ item_id: item.id })
-              .join('repertoire', 'repertoire_items.repertoire_id', 'repertoire.id')
+              .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
               .first()
               .then(repertoireItem => {
                 if (repertoireItem) {
@@ -56,9 +56,9 @@ router.get('/api/events', (req, res) => {
                       return newRepertoireItem;
                     });
                 }
-                return knex('exercise_items')
+                return knex('exercise_instances')
                   .where({ item_id: item.id })
-                  .join('exercises', 'exercise_items.exercise_id', 'exercises.id')
+                  .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
                   .first()
                   .then(exercise => {
                     if (!exercise) {
