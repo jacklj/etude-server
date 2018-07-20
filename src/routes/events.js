@@ -1,5 +1,6 @@
 import express from 'express';
 import knex from '../knex';
+import { ITEM_TYPES } from '../constants';
 
 const router = express.Router();
 
@@ -46,6 +47,7 @@ router.get('/api/events', (req, res) => {
               .then(repertoireItem => {
                 if (repertoireItem) {
                   const newRepertoireItem = Object.assign({}, repertoireItem); // functional
+                  newRepertoireItem.type = ITEM_TYPES.PIECE;
                   return knex('people')
                     .where({ id: newRepertoireItem.composer })
                     .first()
@@ -63,6 +65,7 @@ router.get('/api/events', (req, res) => {
                       return Promise.resolve(undefined);
                     }
                     const newExercise = Object.assign({}, exercise); // functional
+                    newExercise.type = ITEM_TYPES.EXERCISE;
                     return knex('people')
                       .where({ id: newExercise.teacher_who_created_it })
                       .first()
