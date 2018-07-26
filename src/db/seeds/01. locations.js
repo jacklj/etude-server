@@ -4,6 +4,8 @@ export const seed = (knex) => knex('repertoire_instances') // eslint-disable-lin
   .then(() => knex('exercise_instances').del())
   .then(() => knex('exercises').del())
   .then(() => knex('people_at_events').del())
+  .then(() => knex('lessons').del())
+  .then(() => knex('masterclasses').del())
   .then(() => knex('people').del())
   .then(() => knex('items').del())
   .then(() => knex('events').del())

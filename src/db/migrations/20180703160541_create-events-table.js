@@ -26,7 +26,6 @@ exports.up = knex => knex.schema
       EVENT_TYPES.THOUGHT,
       EVENT_TYPES.OTHER,
     ]);
-    table.string('name');
     table
       .integer('location_id')
       .references('id')
@@ -69,16 +68,9 @@ exports.up = knex => knex.schema
       PERFORMANCE_TYPES.CONCERT,
       PERFORMANCE_TYPES.OPERA,
       PERFORMANCE_TYPES.RECITAL,
+      PERFORMANCE_TYPES.COMPETITION,
+      PERFORMANCE_TYPES.AUDITION,
     ]);
-    table
-      .integer('event_id')
-      .references('id')
-      .inTable('events');
-  })
-  .createTable('thoughts', table => {
-    table.increments('id').primary();
-    table.string('title');
-    table.text('details', 'longtext'); // in case display in public diary
     table
       .integer('event_id')
       .references('id')
@@ -190,7 +182,6 @@ exports.down = knex => knex.schema
   .dropTable('lessons')
   .dropTable('masterclasses')
   .dropTable('performances')
-  .dropTable('thoughts')
   .dropTable('people')
   .dropTable('items')
   .dropTable('events')

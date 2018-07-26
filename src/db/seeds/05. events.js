@@ -7,7 +7,6 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       start: moment('2018-06-25 17:00:00'),
       end: moment('2018-06-25 18:00:00'),
       type: EVENT_TYPES.LESSON,
-      name: 'Alex Ashworth Lesson',
       location_id: knex('locations')
         .where({ name: 'Royal Academy of Music' })
         .select('id'),
@@ -17,7 +16,6 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       start: moment('2018-06-28 11:00:00'),
       end: moment('2018-06-28 13:00:00'),
       type: EVENT_TYPES.MASTERCLASS,
-      name: 'Mary Dunleavy Masterclass Lesson',
       location_id: knex('locations')
         .where({ name: 'Neville Mariner Room, St Martin-in-the-Fields' })
         .select('id'),
@@ -27,7 +25,6 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       start: moment('2018-07-03 14:00:00'),
       end: moment('2018-07-03 15:15:00'),
       type: EVENT_TYPES.LESSON,
-      name: 'Mary Dunleavy Lesson',
       location_id: knex('locations')
         .where({ name: 'Blüthner Pianos' })
         .select('id'),
@@ -37,7 +34,6 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       start: moment('2018-07-05 18:00:00'),
       end: moment('2018-07-05 18:30:00'),
       type: EVENT_TYPES.PRACTICE,
-      name: 'Practice at Glyndebourne',
       location_id: knex('locations')
         .where({ name: 'Practice rooms, Glyndebourne' })
         .select('id'),
