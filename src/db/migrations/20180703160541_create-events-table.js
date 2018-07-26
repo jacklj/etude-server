@@ -1,5 +1,6 @@
-const { EVENT_TYPES } = require('../../constants.js');
-const { ITEM_TYPES } = require('../../constants.js');
+import {
+  EVENT_TYPES, ITEM_TYPES, NOTE_TYPES, PERFORMANCE_TYPES,
+} from '../../constants';
 
 exports.up = knex => knex.schema
   .createTable('locations', table => {
@@ -12,7 +13,8 @@ exports.up = knex => knex.schema
     table.string('postcode');
     table.string('website');
   })
-  .createTable('events', table => {
+  .createTable('events', table => { // events are things that will go in the timeline
+    // supertype
     table.increments('id').primary();
     table.dateTime('start');
     table.dateTime('end');
@@ -20,9 +22,8 @@ exports.up = knex => knex.schema
       EVENT_TYPES.LESSON,
       EVENT_TYPES.PRACTICE,
       EVENT_TYPES.MASTERCLASS,
-      EVENT_TYPES.CONCERT,
-      EVENT_TYPES.OPERA,
-      EVENT_TYPES.RECITAL,
+      EVENT_TYPES.PERFORMANCE, // covers all gigs
+      EVENT_TYPES.THOUGHT,
       EVENT_TYPES.OTHER,
     ]);
     table.string('name');
@@ -38,7 +39,53 @@ exports.up = knex => knex.schema
     table.string('surname');
     table.string('role');
   })
+  .createTable('lessons', table => {
+    table.increments('id').primary();
+    table
+      .integer('event_id')
+      .references('id')
+      .inTable('events');
+    table
+      .integer('teacher')
+      .references('id')
+      .inTable('people');
+  })
+  .createTable('masterclasses', table => {
+    table.increments('id').primary();
+    table
+      .integer('event_id')
+      .references('id')
+      .inTable('events');
+    table
+      .integer('teacher')
+      .references('id')
+      .inTable('people');
+  })
+  .createTable('performances', table => {
+    table.increments('id').primary();
+    table.string('name');
+    table.text('details', 'longtext'); // in case display in public diary
+    table.enu('type', [
+      PERFORMANCE_TYPES.CONCERT,
+      PERFORMANCE_TYPES.OPERA,
+      PERFORMANCE_TYPES.RECITAL,
+    ]);
+    table
+      .integer('event_id')
+      .references('id')
+      .inTable('events');
+  })
+  .createTable('thoughts', table => {
+    table.increments('id').primary();
+    table.string('title');
+    table.text('details', 'longtext'); // in case display in public diary
+    table
+      .integer('event_id')
+      .references('id')
+      .inTable('events');
+  })
   .createTable('people_at_events', table => {
+    // attach people to events
     table.increments('id').primary();
     table
       .integer('event_id')
@@ -52,7 +99,7 @@ exports.up = knex => knex.schema
       .onDelete('cascade');
   })
   .createTable('items', table => {
-    // eg a piece of repertoire, an exercise, etc
+    // supertype of repertoire instances, exercise instances, thoughts
     table.increments('id').primary();
     table.enu('type', [
       ITEM_TYPES.PIECE,
@@ -71,11 +118,22 @@ exports.up = knex => knex.schema
     table.increments('id').primary();
     table.text('note', 'longtext');
     table.text('score', 'longtext');
+    table.enu('type', [NOTE_TYPES.TECHNICAL, NOTE_TYPES.INTERPRETATIONAL, NOTE_TYPES.GENERAL]);
+    // can attach notes to items or, more generally, events. Only one of the
+    // foreign keys should be populated, per record.
+    // trying this implementation (multiple FKs, one table), rather than subtyping
+    // notes and having 2 further tables, item_notes and event_notes
+    // TODO 16/7/2018 wait and see how convenient this way is.
     table
       .integer('item_id')
       .references('id')
       .inTable('items');
+    table
+      .integer('event_id')
+      .references('id')
+      .inTable('events');
   })
+// .raw('ALTER TABLE "notes" ADD CONSTRAINT NOT ("item_id" NOT NULL AND "event_id" NOT NULL);')
   .createTable('repertoire', table => {
     table.increments('id').primary();
     table.string('name');
@@ -129,6 +187,10 @@ exports.down = knex => knex.schema
   .dropTable('repertoire')
   .dropTable('exercise_instances')
   .dropTable('exercises')
+  .dropTable('lessons')
+  .dropTable('masterclasses')
+  .dropTable('performances')
+  .dropTable('thoughts')
   .dropTable('people')
   .dropTable('items')
   .dropTable('events')
