@@ -246,14 +246,32 @@ router.post('/api/performances', (req, res) => {
     });
 });
 
-router.post('/api/events', (req, res) => {
+router.post('/api/practice_sessions', (req, res) => {
   const newEvent = req.body;
+  newEvent.type = EVENT_TYPES.PRACTICE;
   knex('events')
     .insert([newEvent])
-    .returning(['id', 'start', 'end', 'type', 'name', 'location_id', 'rating'])
+    .returning(['id', 'start', 'end', 'type', 'location_id', 'rating'])
     .then(resultArray => resultArray[0])
     .then(result => {
-      console.log(`New event added (id: ${result.id})`);
+      console.log(`New practice session added (id: ${result.id})`);
+      res.status(200).json(result);
+    })
+    .catch(error => {
+      console.warn(error);
+      res.status(400).json(error);
+    });
+});
+
+router.post('/api/thoughts', (req, res) => {
+  const newEvent = req.body;
+  newEvent.type = EVENT_TYPES.THOUGHT;
+  knex('events')
+    .insert([newEvent])
+    .returning(['id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .then(resultArray => resultArray[0])
+    .then(result => {
+      console.log(`New thought added (id: ${result.id})`);
       res.status(200).json(result);
     })
     .catch(error => {
