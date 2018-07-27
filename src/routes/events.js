@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../knex';
-import { ITEM_TYPES } from '../constants';
+import { EVENT_TYPES, ITEM_TYPES } from '../constants';
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -18,8 +18,49 @@ router.get('/api/events', (req, res) => {
           .first()
           .then(location => {
             newEvent.location = location;
+            delete newEvent.location_id;
             return newEvent;
           });
+      }),
+    ))
+    .then(events => Promise.all(
+      // resolve event subtypes
+      events.map(event => {
+        const newEvent = Object.assign({}, event); // functional
+        switch (newEvent.type) {
+          case EVENT_TYPES.LESSON: {
+            return knex('lessons')
+              .where({ event_id: newEvent.id })
+              .join('people', 'lessons.teacher', 'people.id')
+              .first('people.id', 'first_name', 'surname', 'role')
+              .then(result => ({
+                ...newEvent,
+                teacher: result,
+              }));
+          }
+          case EVENT_TYPES.MASTERCLASS: {
+            return knex('masterclasses')
+              .where({ event_id: newEvent.id })
+              .join('people', 'masterclasses.teacher', 'people.id')
+              .first('people.id', 'first_name', 'surname', 'role')
+              .then(result => ({
+                ...newEvent,
+                teacher: result,
+              }));
+          }
+          case EVENT_TYPES.PERFORMANCE: {
+            return knex('performances')
+              .where({ event_id: newEvent.id })
+              .first()
+              .then(result => ({
+                ...newEvent,
+                ...result,
+              }));
+          }
+          default: {
+            return Promise.resolve(newEvent);
+          }
+        }
       }),
     ))
     .then(events => Promise.all(
@@ -30,7 +71,9 @@ router.get('/api/events', (req, res) => {
           .join('people', 'people_at_events.person_id', 'people.id')
           .select('people.id', 'first_name', 'surname', 'role')
           .then(people => {
-            newEvent.people = people;
+            if (people.length > 0) {
+              newEvent.people = people;
+            }
             return newEvent;
           });
       }),
@@ -79,7 +122,9 @@ router.get('/api/events', (req, res) => {
               })),
           ))
           .then(items => {
-            newEvent.items = items;
+            if (items.length > 0) {
+              newEvent.items = items;
+            }
             return newEvent;
           });
       }),
