@@ -150,6 +150,8 @@ const getLessonsTableFields = (lesson) => ({
   ...(lesson.teacher_id && { teacher_id: lesson.teacher_id }),
 });
 
+const getMasterclassesTableFields = getLessonsTableFields;
+
 router.post('/api/lessons', (req, res) => {
   const eventsRecord = getEventsTableFields(req.body);
   eventsRecord.type = EVENT_TYPES.LESSON; // in case not included in request body
@@ -159,7 +161,6 @@ router.post('/api/lessons', (req, res) => {
     .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
     .then(resultArray => resultArray[0])
     .then(result => {
-      console.log('result ', result)
       lessonsRecord.event_id = result.event_id;
       return knex('lessons')
         .insert([lessonsRecord])
@@ -171,7 +172,36 @@ router.post('/api/lessons', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(`New lesson added (event id: ${result.id})`);
+      console.log(`New lesson added (event_id: ${result.event_id}, lesson_id: ${result.lesson_id})`);
+      res.status(200).json(result);
+    })
+    .catch(error => {
+      console.warn(error);
+      res.status(400).json(error);
+    });
+});
+
+router.post('/api/masterclasses', (req, res) => {
+  const eventsRecord = getEventsTableFields(req.body);
+  eventsRecord.type = EVENT_TYPES.MASTERCLASS; // in case not included in request body
+  const masterclassesRecord = getMasterclassesTableFields(req.body);
+  knex('events')
+    .insert([eventsRecord])
+    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .then(resultArray => resultArray[0])
+    .then(result => {
+      masterclassesRecord.event_id = result.event_id;
+      return knex('masterclasses')
+        .insert([masterclassesRecord])
+        .returning(['id as masterclass_id', 'teacher_id'])
+        .then(resultArray => resultArray[0])
+        .then(masterclassesResult => ({
+          ...result,
+          ...masterclassesResult,
+        }));
+    })
+    .then(result => {
+      console.log(`New masterclass added (event_id: ${result.event_id}, masterclass_id: ${result.masterclass_id})`);
       res.status(200).json(result);
     })
     .catch(error => {
