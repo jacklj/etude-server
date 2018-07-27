@@ -138,6 +138,48 @@ router.get('/api/events', (req, res) => {
     });
 });
 
+const getEventsTableFields = (event) => ({
+  ...(event.start && { start: event.start }),
+  ...(event.end && { end: event.end }),
+  ...(event.type && { type: event.type }),
+  ...(event.location_id && { location_id: event.location_id }),
+  ...(event.rating && { rating: event.rating }),
+});
+
+const getLessonsTableFields = (lesson) => ({
+  ...(lesson.teacher_id && { teacher_id: lesson.teacher_id }),
+});
+
+router.post('/api/lessons', (req, res) => {
+  const eventsRecord = getEventsTableFields(req.body);
+  eventsRecord.type = EVENT_TYPES.LESSON; // in case not included in request body
+  const lessonsRecord = getLessonsTableFields(req.body);
+  knex('events')
+    .insert([eventsRecord])
+    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .then(resultArray => resultArray[0])
+    .then(result => {
+      console.log('result ', result)
+      lessonsRecord.event_id = result.event_id;
+      return knex('lessons')
+        .insert([lessonsRecord])
+        .returning(['id as lesson_id', 'teacher_id'])
+        .then(resultArray => resultArray[0])
+        .then(lessonsResult => ({
+          ...result,
+          ...lessonsResult,
+        }));
+    })
+    .then(result => {
+      console.log(`New lesson added (event id: ${result.id})`);
+      res.status(200).json(result);
+    })
+    .catch(error => {
+      console.warn(error);
+      res.status(400).json(error);
+    });
+});
+
 router.post('/api/events', (req, res) => {
   const newEvent = req.body;
   knex('events')
