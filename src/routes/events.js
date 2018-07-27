@@ -31,7 +31,7 @@ router.get('/api/events', (req, res) => {
           case EVENT_TYPES.LESSON: {
             return knex('lessons')
               .where({ event_id: newEvent.id })
-              .join('people', 'lessons.teacher', 'people.id')
+              .join('people', 'lessons.teacher_id', 'people.id')
               .first('people.id', 'first_name', 'surname', 'role')
               .then(result => ({
                 ...newEvent,
@@ -41,7 +41,7 @@ router.get('/api/events', (req, res) => {
           case EVENT_TYPES.MASTERCLASS: {
             return knex('masterclasses')
               .where({ event_id: newEvent.id })
-              .join('people', 'masterclasses.teacher', 'people.id')
+              .join('people', 'masterclasses.teacher_id', 'people.id')
               .first('people.id', 'first_name', 'surname', 'role')
               .then(result => ({
                 ...newEvent,
@@ -88,23 +88,24 @@ router.get('/api/events', (req, res) => {
             items.map(item => knex('repertoire_instances')
               .where({ item_id: item.id })
               .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
-              .first()
+              .first('item_id', 'repertoire_id', 'name', 'composition_date', 'larger_work', 'character_that_sings_it', 'composer_id') // everything but repertoire_instances.id
               .then(repertoireItem => {
                 if (repertoireItem) {
                   const newRepertoireItem = Object.assign({}, repertoireItem); // functional
                   newRepertoireItem.type = ITEM_TYPES.PIECE;
                   return knex('people')
-                    .where({ id: newRepertoireItem.composer })
+                    .where({ id: newRepertoireItem.composer_id })
                     .first()
                     .then(composer => {
                       newRepertoireItem.composer = composer;
+                      delete newRepertoireItem.composer_id;
                       return newRepertoireItem;
                     });
                 }
                 return knex('exercise_instances')
                   .where({ item_id: item.id })
                   .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
-                  .first()
+                  .first('exercise_id', 'item_id', 'name', 'score', 'range_lowest_note', 'range_highest_note', 'details', 'teacher_who_created_it_id') // everything but exercise_instances.id
                   .then(exercise => {
                     if (!exercise) {
                       return Promise.resolve(undefined);
@@ -112,10 +113,11 @@ router.get('/api/events', (req, res) => {
                     const newExercise = Object.assign({}, exercise); // functional
                     newExercise.type = ITEM_TYPES.EXERCISE;
                     return knex('people')
-                      .where({ id: newExercise.teacher_who_created_it })
+                      .where({ id: newExercise.teacher_who_created_it_id })
                       .first()
                       .then(teacherWhoCreatedIt => {
                         newExercise.teacher_who_created_it = teacherWhoCreatedIt;
+                        delete newExercise.teacher_who_created_it_id;
                         return newExercise;
                       });
                   });

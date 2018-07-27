@@ -12,21 +12,21 @@ export const seed = (knex) => knex('exercises') // eslint-disable-line import/pr
       options space=5`,
       range_lowest_note: 'A2',
       range_highest_note: 'E4',
-      teacher_who_created_it: knex('people')
+      teacher_who_created_it_id: knex('people')
         .where({ surname: 'Ashworth' })
         .select('id'),
     },
     {
       name: "Descending siren on 'oo'",
       details: 'Seamless transitions between registers',
-      teacher_who_created_it: knex('people')
+      teacher_who_created_it_id: knex('people')
         .where({ surname: 'Ashworth' })
         .select('id'),
     },
     {
       name: "Sticatto thirds on 'oh'",
       details: 'Seamless transitions between registers',
-      teacher_who_created_it: knex('people')
+      teacher_who_created_it_id: knex('people')
         .where({ surname: 'Ashworth' })
         .select('id'),
     },

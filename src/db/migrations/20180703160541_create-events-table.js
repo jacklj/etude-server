@@ -45,7 +45,7 @@ exports.up = knex => knex.schema
       .references('id')
       .inTable('events');
     table
-      .integer('teacher')
+      .integer('teacher_id')
       .references('id')
       .inTable('people');
   })
@@ -56,7 +56,7 @@ exports.up = knex => knex.schema
       .references('id')
       .inTable('events');
     table
-      .integer('teacher')
+      .integer('teacher_id')
       .references('id')
       .inTable('people');
   })
@@ -130,7 +130,7 @@ exports.up = knex => knex.schema
     table.increments('id').primary();
     table.string('name');
     table
-      .integer('composer')
+      .integer('composer_id')
       .references('id')
       .inTable('people');
     table.date('composition_date');
@@ -145,7 +145,7 @@ exports.up = knex => knex.schema
     table.string('range_highest_note');
     table.text('details', 'longtext');
     table
-      .integer('teacher_who_created_it')
+      .integer('teacher_who_created_it_id')
       .references('id')
       .inTable('people');
   })

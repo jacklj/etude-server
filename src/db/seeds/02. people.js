@@ -37,12 +37,12 @@ export const seed = (knex) => knex('people') // eslint-disable-line import/prefe
     },
     {
       first_name: 'Gaetano',
-      surname: 'Donizetti ',
+      surname: 'Donizetti',
       role: 'Composer',
     },
     {
       first_name: 'Benjamin',
-      surname: 'Britten ',
+      surname: 'Britten',
       role: 'Composer',
     },
   ]);
