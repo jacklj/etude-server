@@ -1,11 +1,14 @@
 export const seed = (knex) => knex('repertoire_instances') // eslint-disable-line import/prefer-default-export
   .del() // First delete *all* tables in correct order
+  .then(() => knex('other_rep_to_work_on').del())
+  .then(() => knex('notes').del())
   .then(() => knex('repertoire').del())
   .then(() => knex('exercise_instances').del())
   .then(() => knex('exercises').del())
   .then(() => knex('people_at_events').del())
   .then(() => knex('lessons').del())
   .then(() => knex('masterclasses').del())
+  .then(() => knex('performances').del())
   .then(() => knex('people').del())
   .then(() => knex('items').del())
   .then(() => knex('events').del())
