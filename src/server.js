@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import locationsRoutes from './routes/locations';
 import eventsRoutes from './routes/events';
+import notesRoutes from './routes/notes';
 import knex from './knex';
 
 const app = express();
@@ -48,3 +49,4 @@ app
 
 app.use(locationsRoutes);
 app.use(eventsRoutes);
+app.use(notesRoutes);
