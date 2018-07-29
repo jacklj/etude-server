@@ -27,6 +27,19 @@ router.get('/api/repertoire/upcoming', (req, res) => {
         ...repertoireFromEvents,
         ...otherRepToWorkOn,
       ])))
+    .then(repertoire => Promise.all(
+      repertoire.map(piece => {
+        const newPiece = Object.assign({}, piece); // functional
+        return knex('people')
+          .where({ id: newPiece.composer_id })
+          .first()
+          .then(composer => {
+            newPiece.composer = composer;
+            delete newPiece.composer_id;
+            return newPiece;
+          });
+      }),
+    ))
     .then(repertoire => res.status(200).json(repertoire))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
