@@ -187,6 +187,35 @@ router.post('/api/lessons', (req, res) => {
     });
 });
 
+router.put('/api/lessons/:id', (req, res) => {
+  const eventId = req.params.id;
+  const eventsRecord = getEventsTableFields(req.body);
+  eventsRecord.type = EVENT_TYPES.LESSON; // in case not included in request body
+  const lessonsRecord = getLessonsTableFields(req.body);
+  knex('events')
+    .where({ id: eventId })
+    .update(eventsRecord)
+    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .then(resultArray => resultArray[0])
+    .then(result => knex('lessons')
+      .where({ event_id: eventId })
+      .insert(lessonsRecord)
+      .returning(['id as lesson_id', 'teacher_id'])
+      .then(resultArray => resultArray[0])
+      .then(lessonsResult => ({
+        ...result,
+        ...lessonsResult,
+      })))
+    .then(result => {
+      console.log(`Lesson updated (event_id: ${result.event_id}, lesson_id: ${result.lesson_id})`);
+      res.status(200).json(result);
+    })
+    .catch(error => {
+      console.warn(error);
+      res.status(400).json(error);
+    });
+});
+
 router.post('/api/masterclasses', (req, res) => {
   const eventsRecord = getEventsTableFields(req.body);
   eventsRecord.type = EVENT_TYPES.MASTERCLASS; // in case not included in request body
