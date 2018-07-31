@@ -1,12 +1,13 @@
-# singprocess
-Software to structure and track singing activities.
+# etude
+Software for musicians.
+Note taking, practice/lesson/gig tracking, project management.
 
-## singprocess-server
+## etude-server
 Node, express.
 
 `yarn start`
 
-## what will singprocess be able to do?
+## planned features
 
 #### Lessons
    - plan for lessons
@@ -19,7 +20,6 @@ Node, express.
   - plan practice
   - see current key technical ideas, linked to the lessons/masterclasses they came from. Visible during practice - mark that you're focussing on them
   - see what pieces you should be working on
-
 
 #### Projects
    - plan for upcoming performances
