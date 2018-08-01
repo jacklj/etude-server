@@ -138,6 +138,31 @@ router.get('/api/events', (req, res) => {
     });
 });
 
+router.get('/api/lessons/:id', (req, res) => {
+  const eventId = req.params.id;
+  knex('events')
+    .where({ id: eventId })
+    .first()
+    .then(event => knex('lessons')
+      .where({ event_id: event.id })
+      .first()
+      .then(lesson => ({
+        event_id: event.id,
+        lesson_id: lesson.id,
+        teacher_id: lesson.teacher_id,
+        start: event.start,
+        end: event.end,
+        type: event.type,
+        location_id: event.location_id,
+        rating: event.rating,
+      })))
+    .then(lesson => res.status(200).json(lesson))
+    .catch(error => {
+      console.warn(error); // eslint-disable-line no-console
+      res.status(400).json(error);
+    });
+});
+
 const getEventsTableFields = (event) => ({
   ...(event.start && { start: event.start }),
   ...(event.end && { end: event.end }),
