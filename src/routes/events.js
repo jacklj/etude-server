@@ -199,7 +199,7 @@ router.put('/api/lessons/:id', (req, res) => {
     .then(resultArray => resultArray[0])
     .then(result => knex('lessons')
       .where({ event_id: eventId })
-      .insert(lessonsRecord)
+      .update(lessonsRecord)
       .returning(['id as lesson_id', 'teacher_id'])
       .then(resultArray => resultArray[0])
       .then(lessonsResult => ({
