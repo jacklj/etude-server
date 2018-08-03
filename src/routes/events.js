@@ -143,6 +143,15 @@ router.get('/api/lessons/:id', (req, res) => {
   knex('events')
     .where({ id: eventId })
     .first()
+    .then(event => knex('locations')
+      .where({ id: event.location_id })
+      .first()
+      .then(location => {
+        const newEvent = { ...event };
+        newEvent.location = location;
+        delete newEvent.location_id;
+        return newEvent;
+      }))
     .then(event => knex('lessons')
       .where({ event_id: event.id })
       .first()
@@ -153,7 +162,7 @@ router.get('/api/lessons/:id', (req, res) => {
         start: event.start,
         end: event.end,
         type: event.type,
-        location_id: event.location_id,
+        location: event.location,
         rating: event.rating,
       })))
     .then(lesson => res.status(200).json(lesson))
