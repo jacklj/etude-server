@@ -155,15 +155,24 @@ router.get('/api/lessons/:id', (req, res) => {
     .then(event => knex('lessons')
       .where({ event_id: event.id })
       .first()
+      .then(lesson => knex('people')
+        .where({ id: lesson.teacher_id })
+        .first()
+        .then(teacher => {
+          const newLesson = { ...lesson };
+          delete newLesson.teacher_id;
+          newLesson.teacher = teacher;
+          return newLesson;
+        }))
       .then(lesson => ({
         event_id: event.id,
-        lesson_id: lesson.id,
-        teacher_id: lesson.teacher_id,
         start: event.start,
         end: event.end,
         type: event.type,
         location: event.location,
         rating: event.rating,
+        lesson_id: lesson.id,
+        teacher: lesson.teacher,
       })))
     .then(lesson => { // get items for this lesson
       const newLesson = { ...lesson }; // functional
