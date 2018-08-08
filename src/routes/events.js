@@ -165,6 +165,58 @@ router.get('/api/lessons/:id', (req, res) => {
         location: event.location,
         rating: event.rating,
       })))
+    .then(lesson => { // get items for this lesson
+      const newLesson = { ...lesson }; // functional
+      return knex('items')
+        .where({ event_id: lesson.event_id })
+        .select()
+        .then(items => Promise.all(
+          items.map(item => knex('repertoire_instances')
+            .where({ item_id: item.id })
+            .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
+            .first('item_id', 'repertoire_id', 'name', 'composition_date', 'larger_work', 'character_that_sings_it', 'composer_id') // everything but repertoire_instances.id
+            .then(repertoireItem => {
+              if (repertoireItem) { // if repertoire item found, resolve the rep
+                const newRepertoireItem = Object.assign({}, repertoireItem); // functional
+                newRepertoireItem.type = ITEM_TYPES.PIECE;
+                return knex('people')
+                  .where({ id: newRepertoireItem.composer_id })
+                  .first()
+                  .then(composer => {
+                    newRepertoireItem.composer = composer;
+                    delete newRepertoireItem.composer_id;
+                    return newRepertoireItem;
+                  });
+              }
+              // else it's an exercise instance - resolve the exercise
+              return knex('exercise_instances')
+                .where({ item_id: item.id })
+                .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
+                .first('exercise_id', 'item_id', 'name', 'score', 'range_lowest_note', 'range_highest_note', 'details', 'teacher_who_created_it_id') // everything but exercise_instances.id
+                .then(exercise => {
+                  if (!exercise) {
+                    return Promise.resolve(undefined);
+                  }
+                  const newExercise = { ...exercise }; // functional
+                  newExercise.type = ITEM_TYPES.EXERCISE;
+                  return knex('people') // resolve teacher
+                    .where({ id: newExercise.teacher_who_created_it_id })
+                    .first()
+                    .then(teacherWhoCreatedIt => {
+                      newExercise.teacher_who_created_it = teacherWhoCreatedIt;
+                      delete newExercise.teacher_who_created_it_id;
+                      return newExercise;
+                    });
+                });
+            })),
+        ))
+        .then(items => {
+          if (items.length > 0) {
+            newLesson.items = items;
+          }
+          return newLesson;
+        });
+    })
     .then(lesson => res.status(200).json(lesson))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
