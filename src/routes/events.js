@@ -226,6 +226,13 @@ router.get('/api/lessons/:id', (req, res) => {
           return newLesson;
         });
     })
+    .then(lesson => knex('notes') // get general notes for this lesson
+      .where({ event_id: lesson.event_id })
+      .select()
+      .then(general_notes => ({
+        ...lesson,
+        general_notes,
+      })))
     .then(lesson => res.status(200).json(lesson))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
