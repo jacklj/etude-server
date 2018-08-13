@@ -9,7 +9,7 @@ router.use(bodyParser.json());
 router.get('/api/events', (req, res) => {
   // let events;
   knex('events')
-    .select()
+    .select('id as event_id', 'start', 'end', 'type', 'location_id', 'rating')
     .then(events => Promise.all(
       events.map(event => {
         const newEvent = Object.assign({}, event); // functional
@@ -30,28 +30,40 @@ router.get('/api/events', (req, res) => {
         switch (newEvent.type) {
           case EVENT_TYPES.LESSON: {
             return knex('lessons')
-              .where({ event_id: newEvent.id })
-              .join('people', 'lessons.teacher_id', 'people.id')
-              .first('people.id', 'first_name', 'surname', 'role')
-              .then(result => ({
-                ...newEvent,
-                teacher: result,
-              }));
+              .where({ event_id: newEvent.event_id })
+              .first('lessons.id as lesson_id', 'teacher_id')
+              .then(result => {
+                newEvent.lesson_id = result.lesson_id;
+                return result.teacher_id;
+              })
+              .then(teacherId => knex('people')
+                .where({ id: teacherId })
+                .first()
+                .then(teacher => {
+                  newEvent.teacher = teacher;
+                  return newEvent;
+                }));
           }
           case EVENT_TYPES.MASTERCLASS: {
             return knex('masterclasses')
-              .where({ event_id: newEvent.id })
-              .join('people', 'masterclasses.teacher_id', 'people.id')
-              .first('people.id', 'first_name', 'surname', 'role')
-              .then(result => ({
-                ...newEvent,
-                teacher: result,
-              }));
+              .where({ event_id: newEvent.event_id })
+              .first('masterclasses.id as masterclass_id', 'teacher_id')
+              .then(result => {
+                newEvent.masterclass_id = result.masterclass_id;
+                return result.teacher_id;
+              })
+              .then(teacherId => knex('people')
+                .where({ id: teacherId })
+                .first()
+                .then(teacher => {
+                  newEvent.teacher = teacher;
+                  return newEvent;
+                }));
           }
           case EVENT_TYPES.PERFORMANCE: {
             return knex('performances')
               .where({ event_id: newEvent.id })
-              .first()
+              .first('performances.id as performance_id', 'name', 'details', 'type')
               .then(result => ({
                 ...newEvent,
                 ...result,
@@ -67,7 +79,7 @@ router.get('/api/events', (req, res) => {
       events.map(event => {
         const newEvent = Object.assign({}, event); // functional
         return knex('people_at_events')
-          .where({ event_id: event.id })
+          .where({ event_id: event.event_id })
           .join('people', 'people_at_events.person_id', 'people.id')
           .select('people.id', 'first_name', 'surname', 'role')
           .then(people => {
@@ -82,7 +94,7 @@ router.get('/api/events', (req, res) => {
       events.map(event => {
         const newEvent = Object.assign({}, event); // functional
         return knex('items')
-          .where({ event_id: newEvent.id })
+          .where({ event_id: newEvent.event_id })
           .select()
           .then(items => Promise.all(
             items.map(item => knex('repertoire_instances')
