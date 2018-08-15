@@ -146,6 +146,10 @@ router.get('/api/events', (req, res) => {
           });
       }),
     ))
+    .then(events => { // convert to object
+      const eventsAsObject = convertArrayIntoObjectIndexedByIds(events, 'event_id');
+      return eventsAsObject;
+    })
     .then(events => res.status(200).json(events))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
