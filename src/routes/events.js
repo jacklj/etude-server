@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../knex';
 import { EVENT_TYPES, ITEM_TYPES } from '../constants';
+import { convertArrayIntoObjectIndexedByIds } from '../helpers';
 
 const router = express.Router();
 router.use(bodyParser.json());
@@ -137,7 +138,9 @@ router.get('/api/events', (req, res) => {
           ))
           .then(items => {
             if (items.length > 0) {
-              newEvent.items = items;
+              // convert array to object, indexed by item_id
+              const itemsAsObject = convertArrayIntoObjectIndexedByIds(items, 'item_id');
+              newEvent.items = itemsAsObject;
             }
             return newEvent;
           });
@@ -233,18 +236,22 @@ router.get('/api/lessons/:id', (req, res) => {
         ))
         .then(items => {
           if (items.length > 0) {
-            newLesson.items = items;
+            const itemsAsObject = convertArrayIntoObjectIndexedByIds(items, 'item_id');
+            newLesson.items = itemsAsObject;
           }
           return newLesson;
         });
     })
     .then(lesson => knex('notes') // get general notes for this lesson
       .where({ event_id: lesson.event_id })
-      .select()
-      .then(general_notes => ({
-        ...lesson,
-        general_notes,
-      })))
+      .select('id as note_id', 'note', 'score', 'type', 'event_id')
+      .then(generalNotes => {
+        const generalNotesAsObject = convertArrayIntoObjectIndexedByIds(generalNotes, 'note_id');
+        return {
+          ...lesson,
+          notes: generalNotesAsObject,
+        };
+      }))
     .then(lesson => res.status(200).json(lesson))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
