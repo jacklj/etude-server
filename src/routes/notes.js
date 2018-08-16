@@ -37,4 +37,19 @@ router.put('/api/notes/:id', (req, res) => {
     });
 });
 
+router.delete('/api/notes/:id', (req, res) => {
+  const noteId = req.params.id;
+  knex('notes')
+    .where({ id: noteId })
+    .del()
+    .then(() => {
+      console.log(`Note deleted (id: ${noteId})`);
+      res.status(200).json({}); // HTTP 200 expects body - return empty JSON object
+    })
+    .catch(error => {
+      console.warn(error);
+      res.status(400).json(error);
+    });
+});
+
 export default router;
