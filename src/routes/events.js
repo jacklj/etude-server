@@ -397,18 +397,22 @@ router.put('/api/lessons/:id', (req, res) => {
         ))
         .then(items => {
           if (items.length > 0) {
-            newLesson.items = items;
+            const itemsAsObject = convertArrayIntoObjectIndexedByIds(items, 'item_id');
+            newLesson.items = itemsAsObject;
           }
           return newLesson;
         });
     })
     .then(lesson => knex('notes') // get general notes for this lesson
       .where({ event_id: lesson.event_id })
-      .select()
-      .then(general_notes => ({
-        ...lesson,
-        general_notes,
-      })))
+      .select('id as note_id', 'note', 'score', 'type', 'event_id')
+      .then(generalNotes => {
+        const generalNotesAsObject = convertArrayIntoObjectIndexedByIds(generalNotes, 'note_id');
+        return {
+          ...lesson,
+          notes: generalNotesAsObject,
+        };
+      }))
     .then(result => {
       console.log(`Lesson updated (event_id: ${result.event_id}, lesson_id: ${result.lesson_id})`);
       res.status(200).json(result);
