@@ -7,10 +7,10 @@ router.post('/api/notes', (req, res) => {
   const note = req.body;
   knex('notes')
     .insert([note])
-    .returning('*')
+    .returning(['id as note_id', 'note', 'score', 'type', 'event_id', 'item_id'])
     .then(resultArray => resultArray[0])
     .then(result => {
-      console.log(`New note added (id: ${result.id})`);
+      console.log(`New note added (id: ${result.note_id})`);
       res.status(200).json(result);
     })
     .catch(error => {
@@ -25,10 +25,10 @@ router.put('/api/notes/:id', (req, res) => {
   knex('notes')
     .where({ id: noteId })
     .update(note)
-    .returning('*')
+    .returning(['id as note_id', 'note', 'score', 'type', 'event_id', 'item_id'])
     .then(resultArray => resultArray[0])
     .then(result => {
-      console.log(`Note edited (id: ${result.id})`);
+      console.log(`Note edited (id: ${result.note_id})`);
       res.status(200).json(result);
     })
     .catch(error => {
