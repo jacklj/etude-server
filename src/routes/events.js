@@ -552,4 +552,40 @@ router.post('/api/events/:eventId/repertoire', (req, res) => {
     });
 });
 
+router.post('/api/events/:eventId/exercises', (req, res) => {
+  const { eventId } = req.params;
+  const { exerciseId } = req.body;
+  const type = ITEM_TYPES.EXERCISE;
+  const newItem = {
+    type,
+    event_id: eventId,
+  };
+  knex('items')
+    .insert([newItem])
+    .returning(['id as item_id', 'type', 'event_id'])
+    .then(resultArray => resultArray[0])
+    .then(item => {
+      const newExerciseItem = {
+        exercise_id: exerciseId,
+        item_id: item.item_id,
+      };
+      return knex('exercise_instances')
+        .insert([newExerciseItem])
+        .returning(['id as exercise_instance_id', 'exercise_id', 'item_id'])
+        .then(resultArray => resultArray[0])
+        .then(exerciseInstance => ({
+          ...item,
+          ...exerciseInstance,
+        }));
+    })
+    .then(result => {
+      console.log(`New exercise instance added (item_id: ${result.item_id}, exercise_instance_id: ${result.exercise_instance_id})`);
+      res.status(200).json(result);
+    })
+    .catch(error => {
+      console.warn(error);
+      res.status(400).json(error);
+    });
+});
+
 export default router;
