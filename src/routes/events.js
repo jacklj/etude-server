@@ -591,6 +591,24 @@ router.post('/api/events/:eventId/exercises', (req, res) => {
         .insert([newExerciseItem])
         .returning(['id as exercise_instance_id', 'exercise_id', 'item_id'])
         .then(resultArray => resultArray[0])
+        .then(exerciseInstance => knex('exercises') // resolve exercise details
+          .where({ id: exerciseInstance.exercise_id })
+          .first('name', 'score', 'range_lowest_note', 'range_highest_note', 'details', 'teacher_who_created_it_id')
+          .then(exercise => ({
+            ...exercise,
+            ...exerciseInstance,
+          })))
+        .then(exerciseInstance => {
+          const newExerciseInstance = { ...exerciseInstance };
+          return knex('people')
+            .where({ id: exerciseInstance.teacher_who_created_it_id })
+            .first()
+            .then(teacher => {
+              newExerciseInstance.teacher_who_created_it = teacher;
+              delete newExerciseInstance.teacher_who_created_it_id;
+              return newExerciseInstance;
+            });
+        })
         .then(exerciseInstance => ({
           ...item,
           ...exerciseInstance,
