@@ -516,4 +516,40 @@ router.post('/api/thoughts', (req, res) => {
     });
 });
 
+router.post('/api/events/:eventId/repertoire', (req, res) => {
+  const { eventId } = req.params;
+  const { repertoireId } = req.body;
+  const type = ITEM_TYPES.PIECE;
+  const newItem = {
+    type,
+    event_id: eventId,
+  };
+  knex('items')
+    .insert([newItem])
+    .returning(['id as item_id', 'type', 'event_id'])
+    .then(resultArray => resultArray[0])
+    .then(item => {
+      const newRepertoireItem = {
+        repertoire_id: repertoireId,
+        item_id: item.item_id,
+      };
+      return knex('repertoire_instances')
+        .insert([newRepertoireItem])
+        .returning(['id as repertoire_instance_id', 'repertoire_id', 'item_id'])
+        .then(resultArray => resultArray[0])
+        .then(repertoireInstance => ({
+          ...item,
+          ...repertoireInstance,
+        }));
+    })
+    .then(result => {
+      console.log(`New repertoire instance added (item_id: ${result.item_id}, repertoire_instance_id: ${result.repertoire_instance_id})`);
+      res.status(200).json(result);
+    })
+    .catch(error => {
+      console.warn(error);
+      res.status(400).json(error);
+    });
+});
+
 export default router;
