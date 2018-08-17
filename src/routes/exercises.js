@@ -1,6 +1,8 @@
 import express from 'express';
 import knex from '../knex';
 
+import { convertArrayIntoObjectIndexedByIds } from '../helpers';
+
 const router = express.Router();
 
 router.get('/api/exercises', (req, res) => {
@@ -19,6 +21,10 @@ router.get('/api/exercises', (req, res) => {
           });
       }),
     ))
+    .then(exercises => {
+      const exercisesAsObject = convertArrayIntoObjectIndexedByIds(exercises, 'id');
+      return exercisesAsObject;
+    })
     .then(exercises => res.status(200).json(exercises))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
