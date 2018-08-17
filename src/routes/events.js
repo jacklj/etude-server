@@ -537,6 +537,24 @@ router.post('/api/events/:eventId/repertoire', (req, res) => {
         .insert([newRepertoireItem])
         .returning(['id as repertoire_instance_id', 'repertoire_id', 'item_id'])
         .then(resultArray => resultArray[0])
+        .then(repertoireInstance => knex('repertoire') // resolve piece details
+          .where({ id: repertoireInstance.repertoire_id })
+          .first('name', 'composer_id', 'composition_date', 'larger_work', 'character_that_sings_it')
+          .then(repertoire => ({
+            ...repertoire,
+            ...repertoireInstance,
+          })))
+        .then(repertoireInstance => {
+          const newRepertoireInstance = { ...repertoireInstance };
+          return knex('people')
+            .where({ id: repertoireInstance.composer_id })
+            .first()
+            .then(composer => {
+              newRepertoireInstance.composer = composer;
+              delete newRepertoireInstance.composer_id;
+              return newRepertoireInstance;
+            });
+        })
         .then(repertoireInstance => ({
           ...item,
           ...repertoireInstance,
