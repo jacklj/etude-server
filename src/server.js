@@ -8,6 +8,7 @@ import notesRoutes from './routes/notes';
 import repertoireRoutes from './routes/repertoire';
 import exercisesRoutes from './routes/exercises';
 import peopleRoutes from './routes/people';
+import itemsRoutes from './routes/items';
 import knex from './knex';
 
 const app = express();
@@ -56,3 +57,4 @@ app.use(notesRoutes);
 app.use(repertoireRoutes);
 app.use(exercisesRoutes);
 app.use(peopleRoutes);
+app.use(itemsRoutes);
