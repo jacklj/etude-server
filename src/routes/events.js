@@ -624,4 +624,14 @@ router.post('/api/events/:eventId/exercises', (req, res) => {
     });
 });
 
+
+router.get('/api/events/in_progress', (req, res) => knex('events')
+  .whereNull('end')
+  .select()
+  .then(result => res.status(200).json(result))
+  .catch(error => {
+    console.warn(error);
+    res.status(400).json(error);
+  }));
+
 export default router;
