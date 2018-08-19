@@ -1,5 +1,5 @@
 import knex from './knex';
-import { ITEM_TYPES } from './constants';
+import { EVENT_TYPES, ITEM_TYPES } from './constants';
 
 export const convertArrayIntoObjectIndexedByIds = (array, idKey) => {
   const obj = {};
@@ -108,6 +108,25 @@ export const getPerformanceDetails = event => knex('performances')
     ...performance,
   }));
 
+/* Parameters:
+*   - an event
+* Returns:
+*   - an event with subtype details resolved (added)
+*/
+export const resolveEventSubtype = event => {
+  const { type } = event;
+  switch (type) {
+    case EVENT_TYPES.LESSON:
+      return getLessonDetails(event);
+    case EVENT_TYPES.MASTERCLASS:
+      return getMasterclassDetails(event);
+    case EVENT_TYPES.PERFORMANCE:
+      return getPerformanceDetails(event);
+    default:
+      return Promise.resolve(event);
+  }
+};
+
   /* Parameters:
   *   - an event
   * Returns:
@@ -201,3 +220,23 @@ export const getEventGeneralNotes = event => knex('notes') // get general notes 
       notes: generalNotesAsObject,
     };
   });
+
+export const getEventsTableFields = event => ({
+  ...(event.start && { start: event.start }),
+  ...(event.end && { end: event.end }),
+  ...(event.type && { type: event.type }),
+  ...(event.location_id && { location_id: event.location_id }),
+  ...(event.rating && { rating: event.rating }),
+});
+
+export const getLessonsTableFields = lesson => ({
+  ...(lesson.teacher_id && { teacher_id: lesson.teacher_id }),
+});
+
+export const getMasterclassesTableFields = getLessonsTableFields;
+
+export const getPerformancesTableFields = performance => ({
+  ...(performance.name && { name: performance.name }),
+  ...(performance.details && { details: performance.details }),
+  ...(performance.type && { type: performance.type }),
+});

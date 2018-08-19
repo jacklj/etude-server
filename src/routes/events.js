@@ -4,13 +4,15 @@ import knex from '../knex';
 import { EVENT_TYPES, ITEM_TYPES } from '../constants';
 import {
   convertArrayIntoObjectIndexedByIds,
-  getLessonDetails,
-  getMasterclassDetails,
-  getPerformanceDetails,
   getEventItems,
   getEventGeneralNotes,
   getEventLocation,
   getPeopleAtEvent,
+  resolveEventSubtype,
+  getEventsTableFields,
+  getLessonsTableFields,
+  getMasterclassesTableFields,
+  getPerformancesTableFields,
 } from '../helpers';
 
 const router = express.Router();
@@ -20,22 +22,7 @@ router.get('/api/events', (req, res) => {
   knex('events')
     .select('id as event_id', 'start', 'end', 'type', 'location_id', 'rating')
     .then(events => Promise.all(events.map(getEventLocation)))
-    .then(events => Promise.all(
-      // resolve event subtypes
-      events.map(event => {
-        const { type } = event;
-        switch (type) {
-          case EVENT_TYPES.LESSON:
-            return getLessonDetails(event);
-          case EVENT_TYPES.MASTERCLASS:
-            return getMasterclassDetails(event);
-          case EVENT_TYPES.PERFORMANCE:
-            return getPerformanceDetails(event);
-          default:
-            return Promise.resolve(event);
-        }
-      }),
-    ))
+    .then(events => Promise.all(events.map(resolveEventSubtype)))
     .then(events => Promise.all(events.map(getPeopleAtEvent)))
     .then(events => Promise.all(events.map(getEventItems)))
     .then(events => Promise.all(events.map(getEventGeneralNotes)))
@@ -51,25 +38,10 @@ router.get('/api/events/:id', (req, res) => {
   const eventId = req.params.id;
   knex('events')
     .where({ id: eventId })
-    .first()
-    .then(event => knex('locations')
-      .where({ id: event.location_id })
-      .first()
-      .then(location => {
-        const newEvent = { ...event };
-        newEvent.location = location;
-        delete newEvent.location_id;
-        return newEvent;
-      }))
-    .then(event => {
-      const { type } = event;
-      switch (type) {
-        case EVENT_TYPES.LESSON:
-          return getLessonDetails(event);
-        default:
-          return Promise.resolve(event);
-      }
-    })
+    .first('id as event_id', 'start', 'end', 'type', 'location_id', 'rating')
+    .then(getEventLocation)
+    .then(resolveEventSubtype)
+    .then(getPeopleAtEvent)
     .then(getEventItems)
     .then(getEventGeneralNotes)
     .then(lesson => res.status(200).json(lesson))
@@ -77,26 +49,6 @@ router.get('/api/events/:id', (req, res) => {
       console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
-});
-
-const getEventsTableFields = event => ({
-  ...(event.start && { start: event.start }),
-  ...(event.end && { end: event.end }),
-  ...(event.type && { type: event.type }),
-  ...(event.location_id && { location_id: event.location_id }),
-  ...(event.rating && { rating: event.rating }),
-});
-
-const getLessonsTableFields = lesson => ({
-  ...(lesson.teacher_id && { teacher_id: lesson.teacher_id }),
-});
-
-const getMasterclassesTableFields = getLessonsTableFields;
-
-const getPerformancesTableFields = performance => ({
-  ...(performance.name && { name: performance.name }),
-  ...(performance.details && { details: performance.details }),
-  ...(performance.type && { type: performance.type }),
 });
 
 router.post('/api/lessons', (req, res) => {
