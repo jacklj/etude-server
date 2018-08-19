@@ -2,158 +2,24 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../knex';
 import { EVENT_TYPES, ITEM_TYPES } from '../constants';
-import { convertArrayIntoObjectIndexedByIds } from '../helpers';
+import {
+  convertArrayIntoObjectIndexedByIds,
+  getLessonDetails,
+  getMasterclassDetails,
+  getPerformanceDetails,
+  getEventItems,
+  getEventGeneralNotes,
+  getEventLocation,
+  getPeopleAtEvent,
+} from '../helpers';
 
 const router = express.Router();
 router.use(bodyParser.json());
 
-const getLessonDetails = event => knex('lessons')
-  .where({ event_id: event.event_id })
-  .first()
-  .then(lesson => knex('people')
-    .where({ id: lesson.teacher_id })
-    .first()
-    .then(teacher => {
-      const newLesson = { ...lesson };
-      delete newLesson.teacher_id;
-      newLesson.teacher = teacher;
-      return newLesson;
-    }))
-  .then(lesson => ({
-    event_id: event.event_id,
-    start: event.start,
-    end: event.end,
-    type: event.type,
-    location: event.location,
-    rating: event.rating,
-    lesson_id: lesson.id,
-    teacher: lesson.teacher,
-  }));
-
-const getMasterclassDetails = event => knex('masterclasses')
-  .where({ event_id: event.event_id })
-  .first('id as masterclass_id', 'teacher_id')
-  .then(masterclass => knex('people')
-    .where({ id: masterclass.teacher_id })
-    .first()
-    .then(teacher => {
-      const newMasterclass = { ...masterclass };
-      delete newMasterclass.teacher_id;
-      newMasterclass.teacher = teacher;
-      return {
-        ...newMasterclass,
-        ...event,
-      };
-    }));
-
-const getPerformanceDetails = event => knex('performances')
-  .where({ event_id: event.event_id })
-  .first('performances.id as performance_id', 'name', 'details', 'type')
-  .then(performance => ({
-    ...event,
-    ...performance,
-  }));
-
-const getEventItems = event => {
-  // get items for this lesson
-  const newEvent = { ...event }; // functional
-  return knex('items')
-    .where({ event_id: event.event_id })
-    .select()
-    .then(items => Promise.all(
-      items.map(item => knex('repertoire_instances')
-        .where({ item_id: item.id })
-        .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
-        .first(
-          'item_id',
-          'repertoire_id',
-          'name',
-          'composition_date',
-          'larger_work',
-          'character_that_sings_it',
-          'composer_id',
-        ) // everything but repertoire_instances.id
-        .then(repertoireItem => {
-          if (repertoireItem) {
-            // if repertoire item found, resolve the rep
-            const newRepertoireItem = Object.assign({}, repertoireItem); // functional
-            newRepertoireItem.type = ITEM_TYPES.PIECE;
-            return knex('people')
-              .where({ id: newRepertoireItem.composer_id })
-              .first()
-              .then(composer => {
-                newRepertoireItem.composer = composer;
-                delete newRepertoireItem.composer_id;
-                return newRepertoireItem;
-              });
-          }
-          // else it's an exercise instance - resolve the exercise
-          return knex('exercise_instances')
-            .where({ item_id: item.id })
-            .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
-            .first(
-              'exercise_id',
-              'item_id',
-              'name',
-              'score',
-              'range_lowest_note',
-              'range_highest_note',
-              'details',
-              'teacher_who_created_it_id',
-            ) // everything but exercise_instances.id
-            .then(exercise => {
-              if (!exercise) {
-                return Promise.resolve(undefined);
-              }
-              const newExercise = { ...exercise }; // functional
-              newExercise.type = ITEM_TYPES.EXERCISE;
-              return knex('people') // resolve teacher
-                .where({ id: newExercise.teacher_who_created_it_id })
-                .first()
-                .then(teacherWhoCreatedIt => {
-                  newExercise.teacher_who_created_it = teacherWhoCreatedIt;
-                  delete newExercise.teacher_who_created_it_id;
-                  return newExercise;
-                });
-            });
-        })),
-    ))
-    .then(items => {
-      if (items.length > 0) {
-        const itemsAsObject = convertArrayIntoObjectIndexedByIds(items, 'item_id');
-        newEvent.items = itemsAsObject;
-      }
-      return newEvent;
-    });
-};
-
-const getEventGeneralNotes = event => knex('notes') // get general notes for this lesson
-  .where({ event_id: event.event_id })
-  .select('id as note_id', 'note', 'score', 'type', 'event_id')
-  .then(generalNotes => {
-    const generalNotesAsObject = convertArrayIntoObjectIndexedByIds(generalNotes, 'note_id');
-    return {
-      ...event,
-      notes: generalNotesAsObject,
-    };
-  });
-
 router.get('/api/events', (req, res) => {
   knex('events')
     .select('id as event_id', 'start', 'end', 'type', 'location_id', 'rating')
-    .then(events => Promise.all(
-      events.map(event => {
-        const newEvent = Object.assign({}, event); // functional
-        return knex('locations')
-          .where({ id: event.location_id })
-          .first()
-          .then(location => {
-            newEvent.location = location;
-            delete newEvent.location_id;
-            return newEvent;
-          });
-      }),
-    ))
+    .then(events => Promise.all(events.map(getEventLocation)))
     .then(events => Promise.all(
       // resolve event subtypes
       events.map(event => {
@@ -170,98 +36,10 @@ router.get('/api/events', (req, res) => {
         }
       }),
     ))
-    .then(events => Promise.all(
-      events.map(event => {
-        const newEvent = Object.assign({}, event); // functional
-        return knex('people_at_events')
-          .where({ event_id: event.event_id })
-          .join('people', 'people_at_events.person_id', 'people.id')
-          .select('people.id', 'first_name', 'surname', 'role')
-          .then(people => {
-            if (people.length > 0) {
-              newEvent.people = people;
-            }
-            return newEvent;
-          });
-      }),
-    ))
-    .then(events => Promise.all(
-      events.map(event => {
-        const newEvent = Object.assign({}, event); // functional
-        return knex('items')
-          .where({ event_id: newEvent.event_id })
-          .select()
-          .then(items => Promise.all(
-            items.map(item => knex('repertoire_instances')
-              .where({ item_id: item.id })
-              .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
-              .first(
-                'item_id',
-                'repertoire_id',
-                'name',
-                'composition_date',
-                'larger_work',
-                'character_that_sings_it',
-                'composer_id',
-              ) // everything but repertoire_instances.id
-              .then(repertoireItem => {
-                if (repertoireItem) {
-                  const newRepertoireItem = Object.assign({}, repertoireItem); // functional
-                  newRepertoireItem.type = ITEM_TYPES.PIECE;
-                  return knex('people')
-                    .where({ id: newRepertoireItem.composer_id })
-                    .first()
-                    .then(composer => {
-                      newRepertoireItem.composer = composer;
-                      delete newRepertoireItem.composer_id;
-                      return newRepertoireItem;
-                    });
-                }
-                return knex('exercise_instances')
-                  .where({ item_id: item.id })
-                  .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
-                  .first(
-                    'exercise_id',
-                    'item_id',
-                    'name',
-                    'score',
-                    'range_lowest_note',
-                    'range_highest_note',
-                    'details',
-                    'teacher_who_created_it_id',
-                  ) // everything but exercise_instances.id
-                  .then(exercise => {
-                    if (!exercise) {
-                      return Promise.resolve(undefined);
-                    }
-                    const newExercise = Object.assign({}, exercise); // functional
-                    newExercise.type = ITEM_TYPES.EXERCISE;
-                    return knex('people')
-                      .where({ id: newExercise.teacher_who_created_it_id })
-                      .first()
-                      .then(teacherWhoCreatedIt => {
-                        newExercise.teacher_who_created_it = teacherWhoCreatedIt;
-                        delete newExercise.teacher_who_created_it_id;
-                        return newExercise;
-                      });
-                  });
-              })),
-          ))
-          .then(items => {
-            if (items.length > 0) {
-              // convert array to object, indexed by item_id
-              const itemsAsObject = convertArrayIntoObjectIndexedByIds(items, 'item_id');
-              newEvent.items = itemsAsObject;
-            }
-            return newEvent;
-          });
-      }),
-    ))
-    .then(events => {
-      // convert to object
-      const eventsAsObject = convertArrayIntoObjectIndexedByIds(events, 'event_id');
-      return eventsAsObject;
-    })
+    .then(events => Promise.all(events.map(getPeopleAtEvent)))
+    .then(events => Promise.all(events.map(getEventItems)))
+    .then(events => Promise.all(events.map(getEventGeneralNotes)))
+    .then(events => convertArrayIntoObjectIndexedByIds(events, 'event_id'))
     .then(events => res.status(200).json(events))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
