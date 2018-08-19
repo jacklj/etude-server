@@ -39,7 +39,7 @@ router.get('/api/repertoire/upcoming', (req, res) => {
     .select()
     .then(repertoireInstances => Promise.all(
       repertoireInstances.map(repertoireInstance => {
-        const newRepertoireInstance = Object.assign({}, repertoireInstance); // functional
+        const newRepertoireInstance = { ...repertoireInstance }; // functional
         return knex('events')
           .where({ id: repertoireInstance.event_id })
           .first()
@@ -58,7 +58,7 @@ router.get('/api/repertoire/upcoming', (req, res) => {
       ])))
     .then(repertoire => Promise.all(
       repertoire.map(piece => {
-        const newPiece = Object.assign({}, piece); // functional
+        const newPiece = { ...piece }; // functional
         return knex('people')
           .where({ id: newPiece.composer_id })
           .first()

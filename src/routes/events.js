@@ -142,7 +142,7 @@ router.put('/api/lessons/:id', (req, res) => {
             .then(repertoireItem => {
               if (repertoireItem) {
                 // if repertoire item found, resolve the rep
-                const newRepertoireItem = Object.assign({}, repertoireItem); // functional
+                const newRepertoireItem = { ...repertoireItem }; // functional
                 newRepertoireItem.type = ITEM_TYPES.PIECE;
                 return knex('people')
                   .where({ id: newRepertoireItem.composer_id })
