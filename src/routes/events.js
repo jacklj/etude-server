@@ -54,7 +54,8 @@ const getPerformanceDetails = event => knex('performances')
     ...performance,
   }));
 
-const getEventItems = event => { // get items for this lesson
+const getEventItems = event => {
+  // get items for this lesson
   const newEvent = { ...event }; // functional
   return knex('items')
     .where({ event_id: event.event_id })
@@ -63,9 +64,18 @@ const getEventItems = event => { // get items for this lesson
       items.map(item => knex('repertoire_instances')
         .where({ item_id: item.id })
         .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
-        .first('item_id', 'repertoire_id', 'name', 'composition_date', 'larger_work', 'character_that_sings_it', 'composer_id') // everything but repertoire_instances.id
+        .first(
+          'item_id',
+          'repertoire_id',
+          'name',
+          'composition_date',
+          'larger_work',
+          'character_that_sings_it',
+          'composer_id',
+        ) // everything but repertoire_instances.id
         .then(repertoireItem => {
-          if (repertoireItem) { // if repertoire item found, resolve the rep
+          if (repertoireItem) {
+            // if repertoire item found, resolve the rep
             const newRepertoireItem = Object.assign({}, repertoireItem); // functional
             newRepertoireItem.type = ITEM_TYPES.PIECE;
             return knex('people')
@@ -81,7 +91,16 @@ const getEventItems = event => { // get items for this lesson
           return knex('exercise_instances')
             .where({ item_id: item.id })
             .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
-            .first('exercise_id', 'item_id', 'name', 'score', 'range_lowest_note', 'range_highest_note', 'details', 'teacher_who_created_it_id') // everything but exercise_instances.id
+            .first(
+              'exercise_id',
+              'item_id',
+              'name',
+              'score',
+              'range_lowest_note',
+              'range_highest_note',
+              'details',
+              'teacher_who_created_it_id',
+            ) // everything but exercise_instances.id
             .then(exercise => {
               if (!exercise) {
                 return Promise.resolve(undefined);
@@ -135,7 +154,8 @@ router.get('/api/events', (req, res) => {
           });
       }),
     ))
-    .then(events => Promise.all( // resolve event subtypes
+    .then(events => Promise.all(
+      // resolve event subtypes
       events.map(event => {
         const { type } = event;
         switch (type) {
@@ -175,7 +195,15 @@ router.get('/api/events', (req, res) => {
             items.map(item => knex('repertoire_instances')
               .where({ item_id: item.id })
               .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
-              .first('item_id', 'repertoire_id', 'name', 'composition_date', 'larger_work', 'character_that_sings_it', 'composer_id') // everything but repertoire_instances.id
+              .first(
+                'item_id',
+                'repertoire_id',
+                'name',
+                'composition_date',
+                'larger_work',
+                'character_that_sings_it',
+                'composer_id',
+              ) // everything but repertoire_instances.id
               .then(repertoireItem => {
                 if (repertoireItem) {
                   const newRepertoireItem = Object.assign({}, repertoireItem); // functional
@@ -192,7 +220,16 @@ router.get('/api/events', (req, res) => {
                 return knex('exercise_instances')
                   .where({ item_id: item.id })
                   .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
-                  .first('exercise_id', 'item_id', 'name', 'score', 'range_lowest_note', 'range_highest_note', 'details', 'teacher_who_created_it_id') // everything but exercise_instances.id
+                  .first(
+                    'exercise_id',
+                    'item_id',
+                    'name',
+                    'score',
+                    'range_lowest_note',
+                    'range_highest_note',
+                    'details',
+                    'teacher_who_created_it_id',
+                  ) // everything but exercise_instances.id
                   .then(exercise => {
                     if (!exercise) {
                       return Promise.resolve(undefined);
@@ -220,7 +257,8 @@ router.get('/api/events', (req, res) => {
           });
       }),
     ))
-    .then(events => { // convert to object
+    .then(events => {
+      // convert to object
       const eventsAsObject = convertArrayIntoObjectIndexedByIds(events, 'event_id');
       return eventsAsObject;
     })
@@ -263,8 +301,7 @@ router.get('/api/events/:id', (req, res) => {
     });
 });
 
-
-const getEventsTableFields = (event) => ({
+const getEventsTableFields = event => ({
   ...(event.start && { start: event.start }),
   ...(event.end && { end: event.end }),
   ...(event.type && { type: event.type }),
@@ -272,13 +309,13 @@ const getEventsTableFields = (event) => ({
   ...(event.rating && { rating: event.rating }),
 });
 
-const getLessonsTableFields = (lesson) => ({
+const getLessonsTableFields = lesson => ({
   ...(lesson.teacher_id && { teacher_id: lesson.teacher_id }),
 });
 
 const getMasterclassesTableFields = getLessonsTableFields;
 
-const getPerformancesTableFields = (performance) => ({
+const getPerformancesTableFields = performance => ({
   ...(performance.name && { name: performance.name }),
   ...(performance.details && { details: performance.details }),
   ...(performance.type && { type: performance.type }),
@@ -304,7 +341,9 @@ router.post('/api/lessons', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(`New lesson added (event_id: ${result.event_id}, lesson_id: ${result.lesson_id})`);
+      console.log(
+        `New lesson added (event_id: ${result.event_id}, lesson_id: ${result.lesson_id})`,
+      );
       res.status(200).json(result);
     })
     .catch(error => {
@@ -351,7 +390,8 @@ router.put('/api/lessons/:id', (req, res) => {
         newLesson.teacher = teacher;
         return newLesson;
       }))
-    .then(lesson => { // get items for this lesson
+    .then(lesson => {
+      // get items for this lesson
       const newLesson = { ...lesson }; // functional
       return knex('items')
         .where({ event_id: lesson.event_id })
@@ -360,9 +400,18 @@ router.put('/api/lessons/:id', (req, res) => {
           items.map(item => knex('repertoire_instances')
             .where({ item_id: item.id })
             .join('repertoire', 'repertoire_instances.repertoire_id', 'repertoire.id')
-            .first('item_id', 'repertoire_id', 'name', 'composition_date', 'larger_work', 'character_that_sings_it', 'composer_id') // everything but repertoire_instances.id
+            .first(
+              'item_id',
+              'repertoire_id',
+              'name',
+              'composition_date',
+              'larger_work',
+              'character_that_sings_it',
+              'composer_id',
+            ) // everything but repertoire_instances.id
             .then(repertoireItem => {
-              if (repertoireItem) { // if repertoire item found, resolve the rep
+              if (repertoireItem) {
+                // if repertoire item found, resolve the rep
                 const newRepertoireItem = Object.assign({}, repertoireItem); // functional
                 newRepertoireItem.type = ITEM_TYPES.PIECE;
                 return knex('people')
@@ -378,7 +427,16 @@ router.put('/api/lessons/:id', (req, res) => {
               return knex('exercise_instances')
                 .where({ item_id: item.id })
                 .join('exercises', 'exercise_instances.exercise_id', 'exercises.id')
-                .first('exercise_id', 'item_id', 'name', 'score', 'range_lowest_note', 'range_highest_note', 'details', 'teacher_who_created_it_id') // everything but exercise_instances.id
+                .first(
+                  'exercise_id',
+                  'item_id',
+                  'name',
+                  'score',
+                  'range_lowest_note',
+                  'range_highest_note',
+                  'details',
+                  'teacher_who_created_it_id',
+                ) // everything but exercise_instances.id
                 .then(exercise => {
                   if (!exercise) {
                     return Promise.resolve(undefined);
@@ -444,7 +502,11 @@ router.post('/api/masterclasses', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(`New masterclass added (event_id: ${result.event_id}, masterclass_id: ${result.masterclass_id})`);
+      console.log(
+        `New masterclass added (event_id: ${result.event_id}, masterclass_id: ${
+          result.masterclass_id
+        })`,
+      );
       res.status(200).json(result);
     })
     .catch(error => {
@@ -474,7 +536,11 @@ router.post('/api/performances', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(`New performance added (event_id: ${result.event_id}, performance_id: ${result.performance_id})`);
+      console.log(
+        `New performance added (event_id: ${result.event_id}, performance_id: ${
+          result.performance_id
+        })`,
+      );
       res.status(200).json(result);
     })
     .catch(error => {
@@ -540,7 +606,13 @@ router.post('/api/events/:eventId/repertoire', (req, res) => {
         .then(resultArray => resultArray[0])
         .then(repertoireInstance => knex('repertoire') // resolve piece details
           .where({ id: repertoireInstance.repertoire_id })
-          .first('name', 'composer_id', 'composition_date', 'larger_work', 'character_that_sings_it')
+          .first(
+            'name',
+            'composer_id',
+            'composition_date',
+            'larger_work',
+            'character_that_sings_it',
+          )
           .then(repertoire => ({
             ...repertoire,
             ...repertoireInstance,
@@ -562,7 +634,11 @@ router.post('/api/events/:eventId/repertoire', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(`New repertoire instance added (item_id: ${result.item_id}, repertoire_instance_id: ${result.repertoire_instance_id})`);
+      console.log(
+        `New repertoire instance added (item_id: ${result.item_id}, repertoire_instance_id: ${
+          result.repertoire_instance_id
+        })`,
+      );
       res.status(200).json(result);
     })
     .catch(error => {
@@ -594,7 +670,14 @@ router.post('/api/events/:eventId/exercises', (req, res) => {
         .then(resultArray => resultArray[0])
         .then(exerciseInstance => knex('exercises') // resolve exercise details
           .where({ id: exerciseInstance.exercise_id })
-          .first('name', 'score', 'range_lowest_note', 'range_highest_note', 'details', 'teacher_who_created_it_id')
+          .first(
+            'name',
+            'score',
+            'range_lowest_note',
+            'range_highest_note',
+            'details',
+            'teacher_who_created_it_id',
+          )
           .then(exercise => ({
             ...exercise,
             ...exerciseInstance,
@@ -616,7 +699,11 @@ router.post('/api/events/:eventId/exercises', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(`New exercise instance added (item_id: ${result.item_id}, exercise_instance_id: ${result.exercise_instance_id})`);
+      console.log(
+        `New exercise instance added (item_id: ${result.item_id}, exercise_instance_id: ${
+          result.exercise_instance_id
+        })`,
+      );
       res.status(200).json(result);
     })
     .catch(error => {
@@ -624,7 +711,6 @@ router.post('/api/events/:eventId/exercises', (req, res) => {
       res.status(400).json(error);
     });
 });
-
 
 router.get('/api/events/in_progress', (req, res) => knex('events')
   .whereNull('end')
