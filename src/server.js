@@ -3,7 +3,7 @@ import HTTP from 'http';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import locationsRoutes from './routes/locations';
-import eventsRoutes from './routes/events';
+import eventsRouter from './routes/events/events';
 import notesRoutes from './routes/notes';
 import repertoireRoutes from './routes/repertoire';
 import exercisesRoutes from './routes/exercises';
@@ -51,8 +51,9 @@ app
       });
   });
 
+const base = '/api';
 app.use(locationsRoutes);
-app.use(eventsRoutes);
+app.use(`${base}/events`, eventsRouter);
 app.use(notesRoutes);
 app.use(repertoireRoutes);
 app.use(exercisesRoutes);

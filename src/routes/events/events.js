@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import knex from '../knex';
-import { EVENT_TYPES, ITEM_TYPES } from '../constants';
+import knex from '../../knex';
+import { EVENT_TYPES, ITEM_TYPES } from '../../constants';
 import {
   convertArrayIntoObjectIndexedByIds,
   getEventItems,
@@ -13,12 +13,12 @@ import {
   getLessonsTableFields,
   getMasterclassesTableFields,
   getPerformancesTableFields,
-} from '../helpers';
+} from '../../helpers';
 
 const router = express.Router();
 router.use(bodyParser.json());
 
-router.get('/api/events', (req, res) => {
+router.get('/', (req, res) => {
   knex('events')
     .select('id as event_id', 'start', 'end', 'type', 'location_id', 'rating')
     .then(events => Promise.all(events.map(getEventLocation)))
@@ -34,7 +34,7 @@ router.get('/api/events', (req, res) => {
     });
 });
 
-router.get('/api/events/:id', (req, res) => {
+router.get('/:id', (req, res) => {
   const eventId = req.params.id;
   knex('events')
     .where({ id: eventId })
@@ -51,7 +51,7 @@ router.get('/api/events/:id', (req, res) => {
     });
 });
 
-router.post('/api/lessons', (req, res) => {
+router.post('/lessons', (req, res) => {
   const eventsRecord = getEventsTableFields(req.body);
   eventsRecord.type = EVENT_TYPES.LESSON; // in case not included in request body
   const lessonsRecord = getLessonsTableFields(req.body);
@@ -82,7 +82,7 @@ router.post('/api/lessons', (req, res) => {
     });
 });
 
-router.put('/api/lessons/:id', (req, res) => {
+router.put('/lessons/:id', (req, res) => {
   const eventId = req.params.id;
   const eventsRecord = getEventsTableFields(req.body);
   eventsRecord.type = EVENT_TYPES.LESSON; // in case not included in request body
@@ -212,7 +212,7 @@ router.put('/api/lessons/:id', (req, res) => {
     });
 });
 
-router.post('/api/masterclasses', (req, res) => {
+router.post('/masterclasses', (req, res) => {
   const eventsRecord = getEventsTableFields(req.body);
   eventsRecord.type = EVENT_TYPES.MASTERCLASS; // in case not included in request body
   const masterclassesRecord = getMasterclassesTableFields(req.body);
@@ -245,7 +245,7 @@ router.post('/api/masterclasses', (req, res) => {
     });
 });
 
-router.post('/api/performances', (req, res) => {
+router.post('/performances', (req, res) => {
   const eventsRecord = getEventsTableFields(req.body);
   eventsRecord.type = EVENT_TYPES.PERFORMANCE; // overwrite the performance type with
   // this event type, for the event record
@@ -279,7 +279,7 @@ router.post('/api/performances', (req, res) => {
     });
 });
 
-router.post('/api/practice_sessions', (req, res) => {
+router.post('/practice_sessions', (req, res) => {
   const newEvent = req.body;
   newEvent.type = EVENT_TYPES.PRACTICE;
   knex('events')
@@ -296,7 +296,7 @@ router.post('/api/practice_sessions', (req, res) => {
     });
 });
 
-router.post('/api/thoughts', (req, res) => {
+router.post('/thoughts', (req, res) => {
   const newEvent = req.body;
   newEvent.type = EVENT_TYPES.THOUGHT;
   knex('events')
@@ -313,7 +313,7 @@ router.post('/api/thoughts', (req, res) => {
     });
 });
 
-router.post('/api/events/:eventId/repertoire', (req, res) => {
+router.post('/:eventId/repertoire', (req, res) => {
   const { eventId } = req.params;
   const { repertoireId } = req.body;
   const type = ITEM_TYPES.PIECE;
@@ -377,7 +377,7 @@ router.post('/api/events/:eventId/repertoire', (req, res) => {
     });
 });
 
-router.post('/api/events/:eventId/exercises', (req, res) => {
+router.post('/:eventId/exercises', (req, res) => {
   const { eventId } = req.params;
   const { exerciseId } = req.body;
   const type = ITEM_TYPES.EXERCISE;
@@ -442,7 +442,7 @@ router.post('/api/events/:eventId/exercises', (req, res) => {
     });
 });
 
-router.get('/api/events/in_progress', (req, res) => knex('events')
+router.get('/in_progress', (req, res) => knex('events')
   .whereNull('end')
   .select()
   .then(result => res.status(200).json(result))
