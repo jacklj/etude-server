@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../../knex';
-import { EVENT_TYPES, ITEM_TYPES } from '../../constants';
+import { ITEM_TYPES } from '../../constants';
 import {
   convertArrayIntoObjectIndexedByIds,
   getEventItems,
@@ -9,17 +9,21 @@ import {
   getEventLocation,
   getPeopleAtEvent,
   resolveEventSubtype,
-  getEventsTableFields,
-  getPerformancesTableFields,
 } from '../../helpers';
 import lessonsRouter from './lessons';
 import masterclassesRouter from './masterclasses';
+import performancesRouter from './performances';
+import practiceSessionsRouter from './practiceSessions';
+import thoughtsRouter from './thoughts';
 
 const eventsRouter = express.Router();
 eventsRouter.use(bodyParser.json());
 
 eventsRouter.use('/lessons', lessonsRouter);
 eventsRouter.use('/masterclasses', masterclassesRouter);
+eventsRouter.use('/performances', performancesRouter);
+eventsRouter.use('/practice_sessions', practiceSessionsRouter);
+eventsRouter.use('/thoughts', thoughtsRouter);
 
 eventsRouter.get('/', (req, res) => {
   knex('events')
@@ -50,74 +54,6 @@ eventsRouter.get('/:id', (req, res) => {
     .then(lesson => res.status(200).json(lesson))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
-      res.status(400).json(error);
-    });
-});
-
-eventsRouter.post('/performances', (req, res) => {
-  const eventsRecord = getEventsTableFields(req.body);
-  eventsRecord.type = EVENT_TYPES.PERFORMANCE; // overwrite the performance type with
-  // this event type, for the event record
-  const performancesRecord = getPerformancesTableFields(req.body);
-  knex('events')
-    .insert([eventsRecord])
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
-    .then(resultArray => resultArray[0])
-    .then(result => {
-      performancesRecord.event_id = result.event_id;
-      return knex('performances')
-        .insert([performancesRecord])
-        .returning(['id as performance_id', 'name', 'details', 'type as performance_type'])
-        .then(resultArray => resultArray[0])
-        .then(performancesResult => ({
-          ...result,
-          ...performancesResult,
-        }));
-    })
-    .then(result => {
-      console.log(
-        `New performance added (event_id: ${result.event_id}, performance_id: ${
-          result.performance_id
-        })`,
-      );
-      res.status(200).json(result);
-    })
-    .catch(error => {
-      console.warn(error);
-      res.status(400).json(error);
-    });
-});
-
-eventsRouter.post('/practice_sessions', (req, res) => {
-  const newEvent = req.body;
-  newEvent.type = EVENT_TYPES.PRACTICE;
-  knex('events')
-    .insert([newEvent])
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
-    .then(resultArray => resultArray[0])
-    .then(result => {
-      console.log(`New practice session added (id: ${result.event_id})`);
-      res.status(200).json(result);
-    })
-    .catch(error => {
-      console.warn(error);
-      res.status(400).json(error);
-    });
-});
-
-eventsRouter.post('/thoughts', (req, res) => {
-  const newEvent = req.body;
-  newEvent.type = EVENT_TYPES.THOUGHT;
-  knex('events')
-    .insert([newEvent])
-    .returning(['id', 'start', 'end', 'type', 'location_id', 'rating'])
-    .then(resultArray => resultArray[0])
-    .then(result => {
-      console.log(`New thought added (id: ${result.id})`);
-      res.status(200).json(result);
-    })
-    .catch(error => {
-      console.warn(error);
       res.status(400).json(error);
     });
 });
