@@ -47,6 +47,21 @@ export const getPeopleAtEvent = event => {
 };
 
 /* Parameters:
+*   - a lesson
+* Returns:
+*   - a lesson with the relevant teacher object inserted
+*/
+export const getLessonTeacher = lesson => knex('people')
+  .where({ id: lesson.teacher_id })
+  .first()
+  .then(teacher => {
+    const newLesson = { ...lesson };
+    delete newLesson.teacher_id;
+    newLesson.teacher = teacher;
+    return newLesson;
+  });
+
+/* Parameters:
 *   - an event
 * Returns:
 *   - an event with lesson details inserted; i.e. a lesson
@@ -54,15 +69,7 @@ export const getPeopleAtEvent = event => {
 export const getLessonDetails = event => knex('lessons')
   .where({ event_id: event.event_id })
   .first()
-  .then(lesson => knex('people')
-    .where({ id: lesson.teacher_id })
-    .first()
-    .then(teacher => {
-      const newLesson = { ...lesson };
-      delete newLesson.teacher_id;
-      newLesson.teacher = teacher;
-      return newLesson;
-    }))
+  .then(getLessonTeacher)
   .then(lesson => ({
     event_id: event.event_id,
     start: event.start,
