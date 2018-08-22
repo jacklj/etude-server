@@ -61,11 +61,11 @@ practiceSessionsRouter.post('/start', (req, res) => {
 
 /*
 * Finish a pratice session - finishes an existing pracice session, adding an end
-* datetime as well as any other details added during the session.
+* datetime.
 */
 practiceSessionsRouter.put('/:id/finish', (req, res) => {
   const eventId = req.params.id;
-  const practiceSession = req.body;
+  const practiceSession = {};
   practiceSession.end = new Date();
 
   knex('events')
