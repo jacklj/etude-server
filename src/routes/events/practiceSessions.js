@@ -67,15 +67,26 @@ practiceSessionsRouter.put('/:id/finish', (req, res) => {
   const eventId = req.params.id;
   const practiceSession = req.body;
   practiceSession.end = new Date();
+
   knex('events')
     .where({ id: eventId })
-    .update(practiceSession)
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
-    .then(resultArray => resultArray[0])
-    .then(result => {
-      console.log(`Practice session finished (id: ${result.event_id}, end: ${result.end})`);
-      res.status(200).json(result);
+    .first()
+    .then(pS => {
+      if (pS.end !== null) {
+        res.status(400).json({ error: 'Practice session already finished' });
+      } else {
+        knex('events')
+          .where({ id: eventId })
+          .update(practiceSession)
+          .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+          .then(resultArray => resultArray[0])
+          .then(result => {
+            console.log(`Practice session finished (id: ${result.event_id}, end: ${result.end})`);
+            res.status(200).json(result);
+          })
+      }
     })
+
     .catch(error => {
       console.warn(error);
       res.status(400).json(error);
