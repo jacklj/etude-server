@@ -31,11 +31,11 @@ practiceSessionsRouter.post('/', (req, res) => {
 * containing the start time and the event type.
 */
 practiceSessionsRouter.put('/:id/start', (req, res) => {
-  const eventId = req.params.id;
+  const eventId = Number(req.params.id);
   const start = new Date();
   const practiceSessionUpdates = { start };
 
-  // TODO if a practice session is already in progress, can't start one
+  // if a practice session is already in progress, can't start one
   // (where type: PRACTICE_SESSION, start isNotNull and end isNull)
   // or add a boolean inProgress field
   knex('events')
@@ -43,7 +43,14 @@ practiceSessionsRouter.put('/:id/start', (req, res) => {
     .select()
     .then(result => {
       if (result.length !== 0) {
-        res.status(400).json({ error: 'A practice session is already in progress' });
+        const eventIdOfInProgressPracticeSession = result[0].id;
+        if (eventId === eventIdOfInProgressPracticeSession) {
+          console.log(`Practice session (id: ${eventId}) cant be started as it is already in progress`);
+          res.status(400).json({ error: 'This practice session is already in progress!' });
+        } else {
+          console.log(`Practice session (id: ${eventId}) not started - one already in progress (id: ${eventIdOfInProgressPracticeSession})`);
+          res.status(400).json({ error: 'An existing practice session is already in progress' });
+        }
       } else {
         knex('events')
           .where({ id: eventId })
