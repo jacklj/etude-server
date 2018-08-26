@@ -82,7 +82,11 @@ practiceSessionsRouter.put('/:id/finish', (req, res) => {
     .where({ id: eventId })
     .first()
     .then(pS => {
-      if (pS.end !== null) {
+      if (pS.start === null) {
+        console.log(`Practice session (id: ${eventId}) cant be finished, as it hasn't started`);
+        res.status(400).json({ error: "Practice session can't be finished, as it hasn't started" });
+      } else if (pS.end !== null) {
+        console.log(`Practice session (id: ${eventId}) cant be finished, as it's already finished`);
         res.status(400).json({ error: 'Practice session already finished' });
       } else {
         knex('events')
