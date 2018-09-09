@@ -247,3 +247,11 @@ export const getPerformancesTableFields = performance => ({
   ...(performance.details && { details: performance.details }),
   ...(performance.type && { type: performance.type }),
 });
+
+const deleteEventSubtypeRecord = (eventId, subtype) => knex(subtype)
+  .where({ event_id: eventId })
+  .del();
+
+export const deleteAnyEventSubtypeRecords = eventId => deleteEventSubtypeRecord(eventId, 'lessons')
+  .then(() => deleteEventSubtypeRecord(eventId, 'masterclasses'))
+  .then(() => deleteEventSubtypeRecord(eventId, 'performances'));

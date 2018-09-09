@@ -4,6 +4,7 @@ import knex from '../../knex';
 import { ITEM_TYPES } from '../../constants';
 import {
   convertArrayIntoObjectIndexedByIds,
+  deleteAnyEventSubtypeRecords,
   getEventItems,
   getEventGeneralNotes,
   getEventLocation,
@@ -54,6 +55,22 @@ eventsRouter.get('/:id', (req, res) => {
     .then(lesson => res.status(200).json(lesson))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
+      res.status(400).json(error);
+    });
+});
+
+eventsRouter.delete('/:id', (req, res) => {
+  const eventId = req.params.id;
+  knex('events')
+    .where({ id: eventId })
+    .del()
+    .then(() => deleteAnyEventSubtypeRecords(eventId))
+    .then(() => {
+      console.log(`Event deleted (id: ${eventId})`);
+      res.status(200).json({}); // HTTP 200 expects body - return empty JSON object
+    })
+    .catch(error => {
+      console.warn(error);
       res.status(400).json(error);
     });
 });
