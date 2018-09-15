@@ -68,24 +68,16 @@ const deleteItemsAttachedToEvent = eventId => knex('items')
   // Don't delete notes attached to items (so when you look at all notes ever
   // made on a piece, these notes are still there)
   // 1. get all items added to this event
-    .where({ event_id: eventId })
-    .select()
-    // 2. delete each items sub-instance record (either a repertoire or
-    // exercise instance)
-    .then(items => Promise.all(
-      items.map(item => knex('repertoire_instances')
-        .where({ item_id: item.id })
-        .del()
-        .then(() => knex('exercise_instances')
-          .where({ item_id: item.id })
-          .del())
-        // 3. finally, delete the item supertype
-        .then(() => knex('items')
-          .where({ id: item.id })
-          .del())),
-    ));
-};
-
+  .where({ event_id: eventId })
+  .select()
+  // 2. delete each items sub-instance record (either a repertoire or
+  // exercise instance)
+  .then(items => Promise.all(
+    items.map(item => knex('repertoire_instances').where({ item_id: item.id }).del()
+      .then(() => knex('exercise_instances').where({ item_id: item.id }).del())
+      // 3. finally, delete the item supertype
+      .then(() => knex('items').where({ id: item.id }).del())),
+  ));
 
 eventsRouter.delete('/:id', (req, res) => {
   const eventId = req.params.id;
