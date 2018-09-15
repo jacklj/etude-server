@@ -63,13 +63,11 @@ const deleteNotesAttachedToEvent = eventId => knex('notes')
   .where({ event_id: eventId })
   .del();
 
-const deleteItemsAttachedToEvent = eventId => {
+const deleteItemsAttachedToEvent = eventId => knex('items')
   // Must also delete item subtype records.
   // Don't delete notes attached to items (so when you look at all notes ever
   // made on a piece, these notes are still there)
-
   // 1. get all items added to this event
-  knex('items')
     .where({ event_id: eventId })
     .select()
     // 2. delete each items sub-instance record (either a repertoire or
