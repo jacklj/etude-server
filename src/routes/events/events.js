@@ -28,7 +28,7 @@ eventsRouter.use('/thoughts', thoughtsRouter);
 
 eventsRouter.get('/', (req, res) => {
   knex('events')
-    .select('id as event_id', 'start', 'end', 'type', 'location_id', 'rating')
+    .select('id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress')
     .then(events => Promise.all(events.map(getEventLocation)))
     .then(events => Promise.all(events.map(resolveEventSubtype)))
     .then(events => Promise.all(events.map(getPeopleAtEvent)))
@@ -46,7 +46,7 @@ eventsRouter.get('/:id', (req, res) => {
   const eventId = req.params.id;
   knex('events')
     .where({ id: eventId })
-    .first('id as event_id', 'start', 'end', 'type', 'location_id', 'rating')
+    .first('id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress')
     .then(getEventLocation)
     .then(resolveEventSubtype)
     .then(getPeopleAtEvent)

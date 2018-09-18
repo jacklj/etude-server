@@ -14,7 +14,7 @@ practiceSessionsRouter.post('/', (req, res) => {
   newEvent.type = EVENT_TYPES.PRACTICE;
   knex('events')
     .insert([newEvent])
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
     .then(resultArray => resultArray[0])
     .then(result => {
       console.log(`New practice session added (id: ${result.event_id})`);
@@ -32,14 +32,14 @@ practiceSessionsRouter.post('/', (req, res) => {
 */
 practiceSessionsRouter.put('/:id/start', (req, res) => {
   const eventId = Number(req.params.id);
-  const start = new Date();
-  const practiceSessionUpdates = { start };
+  const practiceSessionUpdates = {
+    start: new Date(),
+    in_progress: true,
+  };
 
   // if a practice session is already in progress, can't start one
-  // (where type: PRACTICE_SESSION, start isNotNull and end isNull)
-  // or add a boolean inProgress field
   knex('events')
-    .whereRaw("events.type='EVENT_TYPES.PRACTICE' AND events.start IS NOT NULL AND events.end IS NULL")
+    .where({ in_progress: true })
     .select()
     .then(result => {
       if (result.length !== 0) {
@@ -55,7 +55,7 @@ practiceSessionsRouter.put('/:id/start', (req, res) => {
         knex('events')
           .where({ id: eventId })
           .update(practiceSessionUpdates)
-          .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+          .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
           .then(resultArray => resultArray[0])
           .then(newPracticeSession => {
             console.log(`Practice session started (id: ${newPracticeSession.event_id}, start: ${newPracticeSession.start})`);
@@ -75,24 +75,23 @@ practiceSessionsRouter.put('/:id/start', (req, res) => {
 */
 practiceSessionsRouter.put('/:id/finish', (req, res) => {
   const eventId = req.params.id;
-  const practiceSession = {};
-  practiceSession.end = new Date();
+  const practiceSessionUpdates = {
+    end: new Date(),
+    in_progress: false,
+  };
 
   knex('events')
     .where({ id: eventId })
     .first()
     .then(pS => {
-      if (pS.start === null) {
-        console.log(`Practice session (id: ${eventId}) cant be finished, as it hasn't started`);
-        res.status(400).json({ error: "Practice session can't be finished, as it hasn't started" });
-      } else if (pS.end !== null) {
-        console.log(`Practice session (id: ${eventId}) cant be finished, as it's already finished`);
-        res.status(400).json({ error: 'Practice session already finished' });
+      if (pS.in_progress === false) {
+        console.log(`Practice session (id: ${eventId}) cant be finished, as it isn't in progress`);
+        res.status(400).json({ error: "Practice session can't be finished, as it isn't in progress" });
       } else {
         knex('events')
           .where({ id: eventId })
-          .update(practiceSession)
-          .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+          .update(practiceSessionUpdates)
+          .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
           .then(resultArray => resultArray[0])
           .then(result => {
             console.log(`Practice session finished (id: ${result.event_id}, end: ${result.end})`);

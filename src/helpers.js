@@ -71,12 +71,7 @@ export const getLessonDetails = event => knex('lessons')
   .first()
   .then(getLessonTeacher)
   .then(lesson => ({
-    event_id: event.event_id,
-    start: event.start,
-    end: event.end,
-    type: event.type,
-    location: event.location,
-    rating: event.rating,
+    ...event,
     lesson_id: lesson.id,
     teacher: lesson.teacher,
   }));

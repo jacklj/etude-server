@@ -17,7 +17,7 @@ performancesRouter.post('/', (req, res) => {
   const performancesRecord = getPerformancesTableFields(req.body);
   knex('events')
     .insert([eventsRecord])
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
     .then(resultArray => resultArray[0])
     .then(result => {
       performancesRecord.event_id = result.event_id;

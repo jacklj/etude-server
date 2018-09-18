@@ -21,7 +21,7 @@ lessonsRouter.post('/', (req, res) => {
   const lessonsRecord = getLessonsTableFields(req.body);
   knex('events')
     .insert([eventsRecord])
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
     .then(resultArray => resultArray[0])
     .then(result => {
       lessonsRecord.event_id = result.event_id;
@@ -55,7 +55,7 @@ lessonsRouter.put('/:id', (req, res) => {
   knex('events')
     .where({ id: eventId })
     .update(eventsRecord)
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating'])
+    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
     .then(resultArray => resultArray[0])
     .then(result => knex('lessons')
       .where({ event_id: eventId })
