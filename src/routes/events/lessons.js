@@ -1,9 +1,8 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../../knex';
-import { EVENT_TYPES, ITEM_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../constants';
 import {
-  convertArrayIntoObjectIndexedByIds,
   getEventsTableFields,
   getLessonsTableFields,
   getEventLocation,

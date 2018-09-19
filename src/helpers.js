@@ -61,6 +61,9 @@ export const getLessonTeacher = lesson => knex('people')
     return newLesson;
   });
 
+// the same as getLessonTeacher
+export const getMasterclassTeacher = getLessonTeacher;
+
 /* Parameters:
 *   - an event
 * Returns:
@@ -83,19 +86,13 @@ export const getLessonDetails = event => knex('lessons')
 */
 export const getMasterclassDetails = event => knex('masterclasses')
   .where({ event_id: event.event_id })
-  .first('id as masterclass_id', 'teacher_id')
-  .then(masterclass => knex('people')
-    .where({ id: masterclass.teacher_id })
-    .first()
-    .then(teacher => {
-      const newMasterclass = { ...masterclass };
-      delete newMasterclass.teacher_id;
-      newMasterclass.teacher = teacher;
-      return {
-        ...newMasterclass,
-        ...event,
-      };
-    }));
+  .first()
+  .then(getMasterclassTeacher)
+  .then(masterclass => ({
+    ...event,
+    masterclass_id: masterclass.id,
+    teacher: masterclass.teacher,
+  }));
 
 /* Parameters:
 *   - an event
@@ -223,7 +220,14 @@ export const getEventGeneralNotes = event => knex('notes') // get general notes 
     };
   });
 
-export const getEventsTableFields = event => ({
+const returnUndefinedIfEmptyObject = obj => {
+  if (Object.keys(obj).length === 0 && obj.constructor === Object) {
+    return undefined;
+  }
+  return obj;
+};
+
+export const getEventsTableFields = event => returnUndefinedIfEmptyObject({
   ...(event.start && { start: event.start }),
   ...(event.end && { end: event.end }),
   ...(event.type && { type: event.type }),
@@ -231,13 +235,13 @@ export const getEventsTableFields = event => ({
   ...(event.rating && { rating: event.rating }),
 });
 
-export const getLessonsTableFields = lesson => ({
+export const getLessonsTableFields = lesson => returnUndefinedIfEmptyObject({
   ...(lesson.teacher_id && { teacher_id: lesson.teacher_id }),
 });
 
 export const getMasterclassesTableFields = getLessonsTableFields;
 
-export const getPerformancesTableFields = performance => ({
+export const getPerformancesTableFields = performance => returnUndefinedIfEmptyObject({
   ...(performance.name && { name: performance.name }),
   ...(performance.details && { details: performance.details }),
   ...(performance.type && { type: performance.type }),
@@ -250,3 +254,17 @@ const deleteEventSubtypeRecord = (eventId, subtype) => knex(subtype)
 export const deleteAnyEventSubtypeRecords = eventId => deleteEventSubtypeRecord(eventId, 'lessons')
   .then(() => deleteEventSubtypeRecord(eventId, 'masterclasses'))
   .then(() => deleteEventSubtypeRecord(eventId, 'performances'));
+
+export const makeUpdateEventLogMessage = event => {
+  let message = `Event updated (event_id: ${event.event_id}, type: ${event.type}`;
+  if (event.lesson_id) {
+    message = `${message}, lesson_id: ${event.lesson_id})`;
+  } else if (event.masterclass_id) {
+    message = `${message}, masterclass_id: ${event.masterclass_id})`;
+  } else if (event.performance_id) {
+    message = `${message}, performance_id: ${event.performance_id})`;
+  } else {
+    message = `${message})`;
+  }
+  return message;
+};
