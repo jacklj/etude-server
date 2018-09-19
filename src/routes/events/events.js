@@ -13,10 +13,12 @@ import {
   getEventGeneralNotes,
   getEventLocation,
   getPeopleAtEvent,
-  getLessonTeacher,
-  getMasterclassTeacher,
   resolveEventSubtype,
   makeUpdateEventLogMessage,
+  conditionallyUpdateEventsRecord,
+  conditionallyUpdateLessonsRecord,
+  conditionallyUpdateMasterclassRecord,
+  conditionallyUpdatePerformanceRecord,
 } from '../../helpers';
 import lessonsRouter from './lessons';
 import masterclassesRouter from './masterclasses';
@@ -70,51 +72,21 @@ eventsRouter.put('/:id', (req, res) => {
   const eventId = req.params.id;
   // 1. update event fields in db
   const eventsRecord = getEventsTableFields(req.body);
-  knex('events')
-    .where({ id: eventId })
-    .update(eventsRecord)
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
-    .then(resultArray => resultArray[0])
+  conditionallyUpdateEventsRecord(eventsRecord, eventId)
     .then(result => {
       // 2. update event subtype fields
       switch (result.type) {
         case EVENT_TYPES.LESSON: {
           const lessonsRecord = getLessonsTableFields(req.body);
-          return knex('lessons')
-            .where({ event_id: eventId })
-            .update(lessonsRecord)
-            .returning(['id as lesson_id', 'teacher_id'])
-            .then(resultArray => resultArray[0])
-            .then(lessonsResult => ({
-              ...result,
-              ...lessonsResult,
-            }))
-            .then(getLessonTeacher); // resolve lesson teacher id to object
+          return conditionallyUpdateLessonsRecord(lessonsRecord, result, eventId);
         }
         case EVENT_TYPES.MASTERCLASS: {
           const masterclassesRecord = getMasterclassesTableFields(req.body);
-          return knex('masterclasses')
-            .where({ event_id: eventId })
-            .update(masterclassesRecord)
-            .returning(['id as masterclass_id', 'teacher_id'])
-            .then(resultArray => resultArray[0])
-            .then(masterclassesResult => ({
-              ...result,
-              ...masterclassesResult,
-            }))
-            .then(getMasterclassTeacher); // resolve lesson teacher id to object
+          return conditionallyUpdateMasterclassRecord(masterclassesRecord, result, eventId);
         }
         case EVENT_TYPES.PERFORMANCE: {
           const performanceRecord = getPerformancesTableFields(req.body);
-          return knex('performances')
-            .where({ event_id: eventId })
-            .update(performanceRecord)
-            .returning(['id as performance_id', 'name', 'details', 'type as performance_type'])
-            .then(resultArray => resultArray[0])
-            .then(performancesResult => ({
-              ...result,
-              ...performancesResult,
-            }));
+          return conditionallyUpdatePerformanceRecord(performanceRecord, result, eventId);
         }
         default:
           return Promise.resolve(result); // just resolve with the event object
