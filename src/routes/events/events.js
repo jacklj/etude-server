@@ -14,12 +14,12 @@ import {
   getEventLocation,
   getPeopleAtEvent,
   resolveEventSubtype,
-  makeUpdateEventLogMessage,
   conditionallyUpdateEventsRecord,
   conditionallyUpdateLessonsRecord,
   conditionallyUpdateMasterclassRecord,
   conditionallyUpdatePerformanceRecord,
 } from '../../helpers';
+import { renderUpdateEventLogMessage } from '../../services/logging';
 import lessonsRouter from './lessons';
 import masterclassesRouter from './masterclasses';
 import performancesRouter from './performances';
@@ -97,7 +97,7 @@ eventsRouter.put('/:id', (req, res) => {
     .then(getEventItems)
     .then(getEventGeneralNotes)
     .then(result => {
-      const logMessage = makeUpdateEventLogMessage(result);
+      const logMessage = renderUpdateEventLogMessage(result);
       console.log(logMessage);
       res.status(200).json(result);
     })

@@ -255,20 +255,6 @@ export const deleteAnyEventSubtypeRecords = eventId => deleteEventSubtypeRecord(
   .then(() => deleteEventSubtypeRecord(eventId, 'masterclasses'))
   .then(() => deleteEventSubtypeRecord(eventId, 'performances'));
 
-export const makeUpdateEventLogMessage = event => {
-  let message = `Event updated (event_id: ${event.event_id}, type: ${event.type}`;
-  if (event.lesson_id) {
-    message = `${message}, lesson_id: ${event.lesson_id})`;
-  } else if (event.masterclass_id) {
-    message = `${message}, masterclass_id: ${event.masterclass_id})`;
-  } else if (event.performance_id) {
-    message = `${message}, performance_id: ${event.performance_id})`;
-  } else {
-    message = `${message})`;
-  }
-  return message;
-};
-
 // TODO 19th September 2018. Clean up the conditionallyUpdate... functions code
 export const conditionallyUpdateEventsRecord = (event, eventId) => {
   if (event) {

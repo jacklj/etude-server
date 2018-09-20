@@ -1,6 +1,8 @@
 import express from 'express';
 import knex from '../knex';
 
+import { renderCreateNoteLogMessage } from '../services/logging';
+
 const router = express.Router();
 
 router.post('/api/notes', (req, res) => {
@@ -10,7 +12,7 @@ router.post('/api/notes', (req, res) => {
     .returning(['id as note_id', 'note', 'score', 'type', 'event_id', 'item_id'])
     .then(resultArray => resultArray[0])
     .then(result => {
-      console.log(`New note added (id: ${result.note_id})`);
+      console.log(renderCreateNoteLogMessage);
       res.status(200).json(result);
     })
     .catch(error => {
