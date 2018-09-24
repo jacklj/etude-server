@@ -12,12 +12,12 @@ import {
   getPerformancesTableFields,
   getEventGeneralNotes,
   getEventLocation,
-  getPeopleAtEvent,
   resolveEventSubtype,
   conditionallyUpdateEventsRecord,
   conditionallyUpdateLessonsRecord,
   conditionallyUpdateMasterclassRecord,
   conditionallyUpdatePerformanceRecord,
+  generateStringListForSqlQuery,
 } from '../../helpers';
 import { renderUpdateEventLogMessage } from '../../services/logging';
 import lessonsRouter from './lessons';
@@ -36,15 +36,155 @@ eventsRouter.use('/practice_sessions', practiceSessionsRouter);
 eventsRouter.use('/thoughts', thoughtsRouter);
 
 eventsRouter.get('/', (req, res) => {
-  knex('events')
-    .select('id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress')
-    .then(events => Promise.all(events.map(getEventLocation)))
-    .then(events => Promise.all(events.map(resolveEventSubtype)))
-    .then(events => Promise.all(events.map(getPeopleAtEvent)))
-    .then(events => Promise.all(events.map(getEventItems)))
-    .then(events => Promise.all(events.map(getEventGeneralNotes)))
-    .then(events => convertArrayIntoObjectIndexedByIds(events, 'event_id'))
-    .then(events => res.status(200).json(events))
+  const response = {}; // for returning normalized data
+  knex('events_master')
+    .select('*')
+    .then(events => {
+      response.events = convertArrayIntoObjectIndexedByIds(events, 'event_id');
+      const locationIds = events.filter(event => event.location_id).map(event => event.location_id);
+      const locationsAsString = generateStringListForSqlQuery(locationIds);
+      return knex
+        .raw(`
+        SELECT
+          id as location_id,
+          name,
+          address_line_1,
+          address_line_2,
+          address_line_3,
+          town_city,
+          postcode,
+          website
+        FROM
+          locations
+        WHERE
+          id IN (${locationsAsString})
+      `)
+        .then(locations => {
+          response.locations = convertArrayIntoObjectIndexedByIds(locations.rows, 'location_id');
+        });
+    })
+    // .then(events => Promise.all(events.map(getPeopleAtEvent)))
+    // TODO 24 Sept 2018 return People at Events (and the relevant people)
+    .then(() => {
+      const eventIdsAsString = Object.values(response.events)
+        .map(event => event.event_id)
+        .toString();
+      return knex
+        .raw(`
+        SELECT
+          id as instance_id,
+          type,
+          exercise_id,
+          repertoire_id,
+          event_id
+        FROM
+          instances_master
+        WHERE
+          event_id IN (${eventIdsAsString})
+      `)
+        .then(instances => {
+          response.instances = convertArrayIntoObjectIndexedByIds(instances.rows, 'instance_id');
+        });
+    })
+    .then(() => {
+      const repertoireIds = Object.values(response.instances)
+        .filter(instance => instance.repertoire_id)
+        .map(instance => instance.repertoire_id);
+      const repertoireIdsAsString = generateStringListForSqlQuery(repertoireIds);
+      return knex
+        .raw(`
+        SELECT
+          id as repertoire_id,
+          name,
+          composer_id,
+          composition_date,
+          larger_work,
+          character_that_sings_it
+        FROM
+          repertoire
+        WHERE
+          id IN (${repertoireIdsAsString})
+      `)
+        .then(repertoire => {
+          response.repertoire = convertArrayIntoObjectIndexedByIds(
+            repertoire.rows,
+            'repertoire_id',
+          );
+        });
+    })
+    .then(() => {
+      const exerciseIds = Object.values(response.instances)
+        .filter(instance => instance.exercise_id)
+        .map(instance => instance.exercise_id);
+      const exerciseIdsAsString = generateStringListForSqlQuery(exerciseIds);
+      return knex
+        .raw(`
+        SELECT
+          id as exercise_id,
+          name,
+          score,
+          range_lowest_note,
+          range_highest_note,
+          details,
+          teacher_who_created_it_id
+        FROM
+          exercises
+        WHERE
+          id IN (${exerciseIdsAsString})
+      `)
+        .then(exercises => {
+          response.exercises = convertArrayIntoObjectIndexedByIds(exercises.rows, 'exercise_id');
+        });
+    })
+    .then(() => {
+      const eventIdsAsString = Object.values(response.events)
+        .map(event => event.event_id)
+        .toString();
+      return knex
+        .raw(`
+        SELECT
+          id as note_id,
+          note,
+          score,
+          type,
+          event_id
+        FROM
+          notes
+        WHERE
+          event_id IN (${eventIdsAsString})
+      `)
+        .then(notes => {
+          response.notes = convertArrayIntoObjectIndexedByIds(notes.rows, 'note_id');
+        });
+    })
+    .then(() => {
+      // people: lesson and masterclass teachers, composers, teacher_who_invented_exercise etc
+      const teacherIds = Object.values(response.events).map(event => event.teacher_id);
+      const composerIds = Object.values(response.repertoire).map(
+        repertoireItem => repertoireItem.composer_id,
+      );
+      const exerciseDeviserIds = Object.values(response.exercises).map(
+        exercise => exercise.teacher_who_created_it_id,
+      );
+      const peopleIds = [...teacherIds, ...composerIds, ...exerciseDeviserIds];
+      const peopleIdsAsString = generateStringListForSqlQuery(peopleIds);
+      return knex
+        .raw(`
+        SELECT
+          id as person_id,
+          first_name,
+          surname,
+          role
+        FROM
+          people
+        WHERE
+          id IN (${peopleIdsAsString})
+      `)
+        .then(people => {
+          response.people = convertArrayIntoObjectIndexedByIds(people.rows, 'person_id');
+        });
+    })
+    .then(() => res.status(200).json(response))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);

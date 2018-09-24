@@ -343,3 +343,15 @@ export const conditionallyUpdatePerformanceRecord = (performance, event, eventId
       ...performancesResult,
     }));
 };
+
+
+const removeDuplicatesAndFalseyValues = list => {
+  const set = new Set(list);
+  const listWithoutFalseyValues = [...set].filter(item => item); // remove falsey values
+  return listWithoutFalseyValues;
+};
+
+export const generateStringListForSqlQuery = list => {
+  const removedDuplicatesAndFalseyValues = removeDuplicatesAndFalseyValues(list);
+  return removedDuplicatesAndFalseyValues.toString();
+};
