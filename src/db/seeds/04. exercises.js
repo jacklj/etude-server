@@ -1,4 +1,6 @@
-export const seed = (knex) => knex('exercises') // eslint-disable-line import/prefer-default-export
+/* eslint-disable import/prefer-default-export */
+
+export const seed = (knex) => knex('exercises')
   .insert([
     {
       name: 'Humming 5th scale',
@@ -14,20 +16,20 @@ export const seed = (knex) => knex('exercises') // eslint-disable-line import/pr
       range_highest_note: 'E4',
       teacher_who_created_it_id: knex('people')
         .where({ surname: 'Ashworth' })
-        .select('id'),
+        .select('person_id'),
     },
     {
       name: "Descending siren on 'oo'",
       details: 'Seamless transitions between registers',
       teacher_who_created_it_id: knex('people')
         .where({ surname: 'Ashworth' })
-        .select('id'),
+        .select('person_id'),
     },
     {
       name: "Sticatto thirds on 'oh'",
       details: 'Seamless transitions between registers',
       teacher_who_created_it_id: knex('people')
         .where({ surname: 'Ashworth' })
-        .select('id'),
+        .select('person_id'),
     },
   ]);

@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 import moment from 'moment';
 import { EVENT_TYPES } from '../../constants';
 
@@ -9,7 +10,7 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       type: EVENT_TYPES.LESSON,
       location_id: knex('locations')
         .where({ name: 'Royal Academy of Music' })
-        .select('id'),
+        .select('location_id'),
       rating: 5,
     },
     {
@@ -18,7 +19,7 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       type: EVENT_TYPES.MASTERCLASS,
       location_id: knex('locations')
         .where({ name: 'Neville Mariner Room, St Martin-in-the-Fields' })
-        .select('id'),
+        .select('location_id'),
       rating: 5,
     },
     {
@@ -27,7 +28,7 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       type: EVENT_TYPES.LESSON,
       location_id: knex('locations')
         .where({ name: 'Blüthner Pianos' })
-        .select('id'),
+        .select('location_id'),
       rating: 4,
     },
     {
@@ -36,7 +37,7 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
       type: EVENT_TYPES.PRACTICE,
       location_id: knex('locations')
         .where({ name: 'Practice rooms, Glyndebourne' })
-        .select('id'),
+        .select('location_id'),
       rating: 3,
     },
   ]);
