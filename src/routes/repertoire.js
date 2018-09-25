@@ -6,25 +6,22 @@ import { convertArrayIntoObjectIndexedByIds } from '../helpers';
 const router = express.Router();
 
 router.get('/api/repertoire', (req, res) => {
-  knex('repertoire')
-    .select()
-    .then(repertoire => Promise.all(
-      repertoire.map(piece => {
-        const newPiece = { ...piece };
-        return knex('people')
-          .where({ id: newPiece.composer_id })
-          .first()
-          .then(composer => {
-            newPiece.composer = composer;
-            delete newPiece.composer_id;
-            return newPiece;
-          });
-      }),
-    ))
-    .then(repertoire => {
-      const repertoireAsObject = convertArrayIntoObjectIndexedByIds(repertoire, 'id');
-      return repertoireAsObject;
-    })
+  // TODO 25th September 2018 should repertoire endpoint also returns relevant composers?
+  // (normalized of course). For now, no, as not many composers so we can separately get
+  // all of them
+  knex.raw(`
+    SELECT
+      id as repertoire_id,
+      name,
+      composer_id,
+      composition_date,
+      larger_work,
+      character_that_sings_it
+    FROM
+      repertoire
+  `)
+    .then(result => result.rows)
+    .then(repertoireArray => convertArrayIntoObjectIndexedByIds(repertoireArray, 'repertoire_id'))
     .then(repertoire => res.status(200).json(repertoire))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
