@@ -1,6 +1,6 @@
 import express from 'express';
-import knex from '../knex';
 
+import knex from '../knex';
 import { convertArrayIntoObjectIndexedByIds } from '../helpers';
 
 const router = express.Router();
