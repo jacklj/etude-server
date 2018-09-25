@@ -46,18 +46,12 @@ eventsRouter.get('/', (req, res) => {
       return knex
         .raw(`
         SELECT
-          id as location_id,
-          name,
-          address_line_1,
-          address_line_2,
-          address_line_3,
-          town_city,
-          postcode,
-          website
+          location_id, name, address_line_1, address_line_2, address_line_3,
+          town_city, postcode, website
         FROM
           locations
         WHERE
-          id IN (${locationsAsString})
+          location_id IN (${locationsAsString})
       `)
         .then(locations => {
           response.locations = convertArrayIntoObjectIndexedByIds(locations.rows, 'location_id');
@@ -72,38 +66,30 @@ eventsRouter.get('/', (req, res) => {
       return knex
         .raw(`
         SELECT
-          id as instance_id,
-          type,
-          exercise_id,
-          repertoire_id,
-          event_id
+          rep_or_exercise_instance_id, exercise_id, repertoire_id, event_id
         FROM
-          instances_master
+          rep_or_exercise_instances
         WHERE
           event_id IN (${eventIdsAsString})
       `)
-        .then(instances => {
-          response.instances = convertArrayIntoObjectIndexedByIds(instances.rows, 'instance_id');
+        .then(repOrExerciseInstances => {
+          response.rep_or_exercise_instances = convertArrayIntoObjectIndexedByIds(repOrExerciseInstances.rows, 'rep_or_exercise_instance_id');
         });
     })
     .then(() => {
-      const repertoireIds = Object.values(response.instances)
-        .filter(instance => instance.repertoire_id)
-        .map(instance => instance.repertoire_id);
+      const repertoireIds = Object.values(response.rep_or_exercise_instances)
+        .filter(repOrExerciseInstance => repOrExerciseInstance.repertoire_id)
+        .map(repInstance => repInstance.repertoire_id);
       const repertoireIdsAsString = generateStringListForSqlQuery(repertoireIds);
       return knex
         .raw(`
         SELECT
-          id as repertoire_id,
-          name,
-          composer_id,
-          composition_date,
-          larger_work,
+          repertoire_id, name, composer_id, composition_date, larger_work,
           character_that_sings_it
         FROM
           repertoire
         WHERE
-          id IN (${repertoireIdsAsString})
+          repertoire_id IN (${repertoireIdsAsString})
       `)
         .then(repertoire => {
           response.repertoire = convertArrayIntoObjectIndexedByIds(
@@ -113,24 +99,19 @@ eventsRouter.get('/', (req, res) => {
         });
     })
     .then(() => {
-      const exerciseIds = Object.values(response.instances)
-        .filter(instance => instance.exercise_id)
-        .map(instance => instance.exercise_id);
+      const exerciseIds = Object.values(response.rep_or_exercise_instances)
+        .filter(repOrExerciseInstance => repOrExerciseInstance.exercise_id)
+        .map(exerciseInstance => exerciseInstance.exercise_id);
       const exerciseIdsAsString = generateStringListForSqlQuery(exerciseIds);
       return knex
         .raw(`
         SELECT
-          id as exercise_id,
-          name,
-          score,
-          range_lowest_note,
-          range_highest_note,
-          details,
-          teacher_who_created_it_id
+          exercise_id, name, score, range_lowest_note, range_highest_note,
+          details, teacher_who_created_it_id
         FROM
           exercises
         WHERE
-          id IN (${exerciseIdsAsString})
+          exercise_id IN (${exerciseIdsAsString})
       `)
         .then(exercises => {
           response.exercises = convertArrayIntoObjectIndexedByIds(exercises.rows, 'exercise_id');
@@ -143,11 +124,7 @@ eventsRouter.get('/', (req, res) => {
       return knex
         .raw(`
         SELECT
-          id as note_id,
-          note,
-          score,
-          type,
-          event_id
+          note_id, note, score, type, event_id
         FROM
           notes
         WHERE
@@ -171,14 +148,11 @@ eventsRouter.get('/', (req, res) => {
       return knex
         .raw(`
         SELECT
-          id as person_id,
-          first_name,
-          surname,
-          role
+          person_id, first_name, surname, role
         FROM
           people
         WHERE
-          id IN (${peopleIdsAsString})
+          person_id IN (${peopleIdsAsString})
       `)
         .then(people => {
           response.people = convertArrayIntoObjectIndexedByIds(people.rows, 'person_id');
