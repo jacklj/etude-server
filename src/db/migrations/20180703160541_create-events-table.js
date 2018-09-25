@@ -168,9 +168,37 @@ exports.up = knex => knex.schema
       .references('repertoire_id')
       .inTable('repertoire');
     table.dateTime('deadline');
-  });
+  })
+  // create views!
+  .raw(`
+    CREATE VIEW events_master AS
+    SELECT
+      events.event_id,
+      events.start,
+      events.end,
+      events.location_id,
+      events.in_progress,
+      events.rating,
+      events.type,
+      performances.performance_id,
+      performances.name,
+      performances.type AS performance_type,
+      performances.details,
+      lessons.lesson_id,
+      masterclasses.masterclass_id,
+      CASE
+        WHEN lessons.teacher_id IS NOT NULL THEN lessons.teacher_id
+        WHEN masterclasses.teacher_id IS NOT NULL THEN masterclasses.teacher_id
+        ELSE NULL
+      END AS teacher_id
+    FROM events
+      LEFT JOIN performances ON (events.event_id = performances.event_id)
+      LEFT JOIN lessons ON (events.event_id = lessons.event_id)
+      LEFT JOIN masterclasses ON (events.event_id = masterclasses.event_id);
+  `);
 
 exports.down = knex => knex.schema
+  .raw('DROP VIEW events_master;')
   .dropTable('other_rep_to_work_on')
   .dropTable('people_at_events')
   .dropTable('notes')
