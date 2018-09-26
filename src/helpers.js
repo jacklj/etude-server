@@ -351,3 +351,20 @@ export const generateStringListForSqlQuery = list => {
   const removedDuplicatesAndFalseyValues = removeDuplicatesAndFalseyValues(list);
   return removedDuplicatesAndFalseyValues.toString();
 };
+
+export const deleteNotesAttachedToEvent = eventId => knex('notes')
+  .where({ event_id: eventId })
+  .del();
+
+export const removeRepOrExerciseInstancesAttachedToEvent = eventId => knex
+// When you delete an event, set all its repOrExerciseInstances' event_id fields to null.
+// We don't want to delete them, because they link notes to pieces, so when you
+// look at all notes ever made on a piece or exercise, these notes are still there.
+  .raw(`
+    UPDATE
+      rep_or_exercise_instances
+    SET
+      event_id = NULL
+    WHERE
+      event_id = ${eventId}
+  `);

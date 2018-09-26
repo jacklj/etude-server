@@ -7,17 +7,16 @@ import { EVENT_TYPES, ITEM_TYPES } from '../../constants';
 import {
   convertArrayIntoObjectIndexedByIds,
   deleteAnyEventSubtypeRecords,
-  getEventItems,
   getEventsTableFields,
   getLessonsTableFields,
   getMasterclassesTableFields,
   getPerformancesTableFields,
-  getEventGeneralNotes,
-  getEventLocation,
   conditionallyUpdateEventsRecord,
   conditionallyUpdateLessonsRecord,
   conditionallyUpdateMasterclassRecord,
   conditionallyUpdatePerformanceRecord,
+  deleteNotesAttachedToEvent,
+  removeRepOrExerciseInstancesAttachedToEvent,
 } from '../../helpers';
 import {
   getEventsLocationsAndAddToResponse,
@@ -156,51 +155,33 @@ eventsRouter.put('/:id', (req, res) => {
     });
 });
 
-const deleteNotesAttachedToEvent = eventId => knex('notes')
-  .where({ event_id: eventId })
-  .del();
-
-const deleteItemsAttachedToEvent = eventId => knex('items')
-// Must also delete item subtype records.
-// Don't delete notes attached to items (so when you look at all notes ever
-// made on a piece, these notes are still there)
-// 1. get all items added to this event
-  .where({ event_id: eventId })
-  .select()
-// 2. delete each items sub-instance record (either a repertoire or
-// exercise instance)
-  .then(items => Promise.all(
-    items.map(item => knex('repertoire_instances')
-      .where({ item_id: item.id })
-      .del()
-      .then(() => knex('exercise_instances')
-        .where({ item_id: item.id })
-        .del())
-    // 3. finally, delete the item supertype
-      .then(() => knex('items')
-        .where({ id: item.id })
-        .del())),
-  ));
 
 eventsRouter.delete('/:id', (req, res) => {
   const eventId = req.params.id;
   // 1. delete event subtype first, as it has a foreign key to the main event record
   deleteAnyEventSubtypeRecords(eventId)
-    // 2. then delete any notes attached directly to the event
+    // 2. delete any notes attached directly to the event
     .then(() => deleteNotesAttachedToEvent(eventId))
-    // 3. then delete any items attached to the event
-    .then(() => deleteItemsAttachedToEvent(eventId))
+    // 3. detach any rep or exercise instances from the event
+    .then(() => removeRepOrExerciseInstancesAttachedToEvent(eventId))
     // 4. then delete the event record itself
-    .then(() => knex('events')
-      .where({ id: eventId })
-      .del())
-    .then(() => {
+    .then(() => knex.raw(`
+      DELETE FROM events
+      WHERE event_id=${eventId};
+    `))
+    .then(result => {
+      if (result.rowCount === 0) throw new EventNotFoundError();
       console.log(`Event deleted (id: ${eventId})`); // eslint-disable-line no-console
       res.status(200).json({}); // HTTP 200 expects body - return empty JSON object
     })
     .catch(error => {
-      console.warn(error); // eslint-disable-line no-console
-      res.status(400).json(error);
+      if (error instanceof EventNotFoundError) {
+        console.warn(`404: couldn't delete event with id ${eventId}, it was not found.`); // eslint-disable-line no-console
+        res.status(404).send(`Couldn't delete event with id ${eventId}, it was not found.`);
+      } else {
+        console.warn(error); // eslint-disable-line no-console
+        res.status(400).json(error);
+      }
     });
 });
 
