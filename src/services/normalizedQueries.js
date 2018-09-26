@@ -112,8 +112,29 @@ export const getEventsNotesAndAddToResponse = (events, response) => getEventsNot
     response.notes = notesObject;
   });
 
+const getPeopleAtEvents = events => {
+  const eventIdsAsString = Object.values(events)
+    .map(event => event.event_id)
+    .toString();
+  return knex.raw(`
+    SELECT
+      person_at_event_id, event_id, person_id
+    FROM
+      people_at_events
+    WHERE
+      event_id IN (${eventIdsAsString})
+  `)
+    .then(dbResponse => convertArrayIntoObjectIndexedByIds(dbResponse.rows, 'person_at_event_id'));
+};
+
+export const getPeopleAtEventsAndAddToResponse = (events, response) => getPeopleAtEvents(events)
+  .then(peopleAtEventsObject => {
+    response.people_at_events = peopleAtEventsObject;
+  });
+
 const getEventsAndRepertoireAndExercisePeople = response => {
-  // people: lesson and masterclass teachers, composers, teacher_who_invented_exercise etc
+  // people: lesson and masterclass teachers, composers,
+  // teacher_who_invented_exercises, people_at_events
   const teacherIds = Object.values(response.events).map(event => event.teacher_id);
   const composerIds = Object.values(response.repertoire).map(
     repertoireItem => repertoireItem.composer_id,
@@ -121,7 +142,8 @@ const getEventsAndRepertoireAndExercisePeople = response => {
   const exerciseDeviserIds = Object.values(response.exercises).map(
     exercise => exercise.teacher_who_created_it_id,
   );
-  const peopleIds = [...teacherIds, ...composerIds, ...exerciseDeviserIds];
+  const peopleAtEventsIds = Object.values(response.people_at_events).map(personAtEvent => personAtEvent.person_id);
+  const peopleIds = [...teacherIds, ...composerIds, ...exerciseDeviserIds, ...peopleAtEventsIds];
   const peopleIdsAsString = generateStringListForSqlQuery(peopleIds);
   return knex.raw(`
     SELECT

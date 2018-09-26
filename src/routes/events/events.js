@@ -25,6 +25,7 @@ import {
   getInstanceExercisesAndAddToResponse,
   getEventsNotesAndAddToResponse,
   getEventsAndRepertoireAndExercisePeopleAndAddToResponse,
+  getPeopleAtEventsAndAddToResponse,
 } from '../../services/normalizedQueries';
 import { renderUpdateEventLogMessage } from '../../services/logging';
 import lessonsRouter from './lessons';
@@ -50,8 +51,7 @@ eventsRouter.get('/', (req, res) => {
       response.events = convertArrayIntoObjectIndexedByIds(events, 'event_id');
     })
     .then(() => getEventsLocationsAndAddToResponse(response.events, response))
-    // .then(events => Promise.all(events.map(getPeopleAtEvent)))
-    // TODO 24 Sept 2018 return People at Events (and the relevant people)
+    .then(() => getPeopleAtEventsAndAddToResponse(response.events, response))
     .then(() => getEventsRepOrExerciseInstancesAndAddToResponse(response.events, response))
     .then(() => getInstanceRepertoireAndAddToResponse(response.rep_or_exercise_instances, response))
     .then(() => getInstanceExercisesAndAddToResponse(response.rep_or_exercise_instances, response))
