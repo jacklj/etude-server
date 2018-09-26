@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import _ from 'lodash';
 
 import knex from '../../knex';
-import { EVENT_TYPES, ITEM_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../constants';
 import {
   convertArrayIntoObjectIndexedByIds,
   deleteAnyEventSubtypeRecords,
@@ -245,13 +245,22 @@ eventsRouter.post('/:eventId/exercises', (req, res) => {
     });
 });
 
-eventsRouter.get('/in_progress', (req, res) => knex('events')
-  .whereNull('end')
-  .select()
-  .then(result => res.status(200).json(result))
-  .catch(error => {
-    console.warn(error); // eslint-disable-line no-console
-    res.status(400).json(error);
-  }));
+eventsRouter.get('/in_progress', (req, res) => {
+  // TODO 26th September 2018 This endpoint doesn't work - gives the following error:
+  // error: invalid input syntax for integer: "in_progress"
+  // No idea why.
+  knex.raw(`
+    SELECT * FROM events_master WHERE in_progress = TRUE;
+  `)
+    .then(inProgressEventsResult => convertArrayIntoObjectIndexedByIds(
+      inProgressEventsResult.rows,
+      'event_id',
+    ))
+    .then(inProgressEventsObject => res.status(200).json(inProgressEventsObject))
+    .catch(error => {
+      console.warn(error); // eslint-disable-line no-console
+      res.status(400).json(error);
+    });
+});
 
 export default eventsRouter;
