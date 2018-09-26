@@ -17,8 +17,15 @@ import {
   conditionallyUpdateLessonsRecord,
   conditionallyUpdateMasterclassRecord,
   conditionallyUpdatePerformanceRecord,
-  generateStringListForSqlQuery,
 } from '../../helpers';
+import {
+  getEventsLocationsAndAddToResponse,
+  getEventsRepOrExerciseInstancesAndAddToResponse,
+  getInstanceRepertoireAndAddToResponse,
+  getInstanceExercisesAndAddToResponse,
+  getEventsNotesAndAddToResponse,
+  getEventsAndRepertoireAndExercisePeopleAndAddToResponse,
+} from '../../services/normalizedQueries';
 import { renderUpdateEventLogMessage } from '../../services/logging';
 import lessonsRouter from './lessons';
 import masterclassesRouter from './masterclasses';
@@ -41,123 +48,15 @@ eventsRouter.get('/', (req, res) => {
     .select('*')
     .then(events => {
       response.events = convertArrayIntoObjectIndexedByIds(events, 'event_id');
-      const locationIds = events.filter(event => event.location_id).map(event => event.location_id);
-      const locationsAsString = generateStringListForSqlQuery(locationIds);
-      return knex
-        .raw(`
-        SELECT
-          location_id, name, address_line_1, address_line_2, address_line_3,
-          town_city, postcode, website
-        FROM
-          locations
-        WHERE
-          location_id IN (${locationsAsString})
-      `)
-        .then(locations => {
-          response.locations = convertArrayIntoObjectIndexedByIds(locations.rows, 'location_id');
-        });
     })
+    .then(() => getEventsLocationsAndAddToResponse(response.events, response))
     // .then(events => Promise.all(events.map(getPeopleAtEvent)))
     // TODO 24 Sept 2018 return People at Events (and the relevant people)
-    .then(() => {
-      const eventIdsAsString = Object.values(response.events)
-        .map(event => event.event_id)
-        .toString();
-      return knex
-        .raw(`
-        SELECT
-          rep_or_exercise_instance_id, exercise_id, repertoire_id, event_id
-        FROM
-          rep_or_exercise_instances
-        WHERE
-          event_id IN (${eventIdsAsString})
-      `)
-        .then(repOrExerciseInstances => {
-          response.rep_or_exercise_instances = convertArrayIntoObjectIndexedByIds(repOrExerciseInstances.rows, 'rep_or_exercise_instance_id');
-        });
-    })
-    .then(() => {
-      const repertoireIds = Object.values(response.rep_or_exercise_instances)
-        .filter(repOrExerciseInstance => repOrExerciseInstance.repertoire_id)
-        .map(repInstance => repInstance.repertoire_id);
-      const repertoireIdsAsString = generateStringListForSqlQuery(repertoireIds);
-      return knex
-        .raw(`
-        SELECT
-          repertoire_id, name, composer_id, composition_date, larger_work,
-          character_that_sings_it
-        FROM
-          repertoire
-        WHERE
-          repertoire_id IN (${repertoireIdsAsString})
-      `)
-        .then(repertoire => {
-          response.repertoire = convertArrayIntoObjectIndexedByIds(
-            repertoire.rows,
-            'repertoire_id',
-          );
-        });
-    })
-    .then(() => {
-      const exerciseIds = Object.values(response.rep_or_exercise_instances)
-        .filter(repOrExerciseInstance => repOrExerciseInstance.exercise_id)
-        .map(exerciseInstance => exerciseInstance.exercise_id);
-      const exerciseIdsAsString = generateStringListForSqlQuery(exerciseIds);
-      return knex
-        .raw(`
-        SELECT
-          exercise_id, name, score, range_lowest_note, range_highest_note,
-          details, teacher_who_created_it_id
-        FROM
-          exercises
-        WHERE
-          exercise_id IN (${exerciseIdsAsString})
-      `)
-        .then(exercises => {
-          response.exercises = convertArrayIntoObjectIndexedByIds(exercises.rows, 'exercise_id');
-        });
-    })
-    .then(() => {
-      const eventIdsAsString = Object.values(response.events)
-        .map(event => event.event_id)
-        .toString();
-      return knex
-        .raw(`
-        SELECT
-          note_id, note, score, type, event_id
-        FROM
-          notes
-        WHERE
-          event_id IN (${eventIdsAsString})
-      `)
-        .then(notes => {
-          response.notes = convertArrayIntoObjectIndexedByIds(notes.rows, 'note_id');
-        });
-    })
-    .then(() => {
-      // people: lesson and masterclass teachers, composers, teacher_who_invented_exercise etc
-      const teacherIds = Object.values(response.events).map(event => event.teacher_id);
-      const composerIds = Object.values(response.repertoire).map(
-        repertoireItem => repertoireItem.composer_id,
-      );
-      const exerciseDeviserIds = Object.values(response.exercises).map(
-        exercise => exercise.teacher_who_created_it_id,
-      );
-      const peopleIds = [...teacherIds, ...composerIds, ...exerciseDeviserIds];
-      const peopleIdsAsString = generateStringListForSqlQuery(peopleIds);
-      return knex
-        .raw(`
-        SELECT
-          person_id, first_name, surname, role
-        FROM
-          people
-        WHERE
-          person_id IN (${peopleIdsAsString})
-      `)
-        .then(people => {
-          response.people = convertArrayIntoObjectIndexedByIds(people.rows, 'person_id');
-        });
-    })
+    .then(() => getEventsRepOrExerciseInstancesAndAddToResponse(response.events, response))
+    .then(() => getInstanceRepertoireAndAddToResponse(response.rep_or_exercise_instances, response))
+    .then(() => getInstanceExercisesAndAddToResponse(response.rep_or_exercise_instances, response))
+    .then(() => getEventsNotesAndAddToResponse(response.events, response))
+    .then(() => getEventsAndRepertoireAndExercisePeopleAndAddToResponse(response))
     .then(() => res.status(200).json(response))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
