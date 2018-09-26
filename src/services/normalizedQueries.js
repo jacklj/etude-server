@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 import knex from '../knex';
 import {
   convertArrayIntoObjectIndexedByIds,
@@ -23,6 +25,7 @@ const getEventsLocations = events => {
 
 export const getEventsLocationsAndAddToResponse = (events, response) => getEventsLocations(events)
   .then(locationsObject => {
+    if (!locationsObject || _.isEmpty(locationsObject)) return;
     response.locations = locationsObject;
   });
 
@@ -43,6 +46,7 @@ const getEventsRepOrExerciseInstances = events => {
 
 export const getEventsRepOrExerciseInstancesAndAddToResponse = (events, response) => getEventsRepOrExerciseInstances(events)
   .then(repOrExerciseInstancesObject => {
+    if (!repOrExerciseInstancesObject || _.isEmpty(repOrExerciseInstancesObject)) return;
     response.rep_or_exercise_instances = repOrExerciseInstancesObject;
   });
 
@@ -68,6 +72,7 @@ const getInstancesRepertoire = repOrExerciseInstances => {
 
 export const getInstanceRepertoireAndAddToResponse = (repOrExerciseInstances, response) => getInstancesRepertoire(repOrExerciseInstances)
   .then(repertoireObject => {
+    if (!repertoireObject || _.isEmpty(repertoireObject)) return;
     response.repertoire = repertoireObject;
   });
 
@@ -88,9 +93,11 @@ const getInstanceExercises = repOrExerciseInstances => {
     .then(exercises => convertArrayIntoObjectIndexedByIds(exercises.rows, 'exercise_id'));
 };
 
-export const getInstanceExercisesAndAddToResponse = (repOrExerciseInstances, response) => getInstanceExercises(repOrExerciseInstances).then(exercisesObject => {
-  response.exercises = exercisesObject;
-});
+export const getInstanceExercisesAndAddToResponse = (repOrExerciseInstances, response) => getInstanceExercises(repOrExerciseInstances)
+  .then(exercisesObject => {
+    if (!exercisesObject || _.isEmpty(exercisesObject)) return;
+    response.exercises = exercisesObject;
+  });
 
 const getEventsNotes = events => {
   const eventIdsAsString = Object.values(events)
@@ -109,6 +116,7 @@ const getEventsNotes = events => {
 
 export const getEventsNotesAndAddToResponse = (events, response) => getEventsNotes(events)
   .then(notesObject => {
+    if (!notesObject || _.isEmpty(notesObject)) return;
     response.notes = notesObject;
   });
 
@@ -129,21 +137,27 @@ const getPeopleAtEvents = events => {
 
 export const getPeopleAtEventsAndAddToResponse = (events, response) => getPeopleAtEvents(events)
   .then(peopleAtEventsObject => {
+    if (!peopleAtEventsObject || _.isEmpty(peopleAtEventsObject)) return;
     response.people_at_events = peopleAtEventsObject;
   });
 
 const getEventsAndRepertoireAndExercisePeople = response => {
   // people: lesson and masterclass teachers, composers,
   // teacher_who_invented_exercises, people_at_events
-  const teacherIds = Object.values(response.events).map(event => event.teacher_id);
-  const composerIds = Object.values(response.repertoire).map(
-    repertoireItem => repertoireItem.composer_id,
-  );
-  const exerciseDeviserIds = Object.values(response.exercises).map(
-    exercise => exercise.teacher_who_created_it_id,
-  );
-  const peopleAtEventsIds = Object.values(response.people_at_events).map(personAtEvent => personAtEvent.person_id);
-  const peopleIds = [...teacherIds, ...composerIds, ...exerciseDeviserIds, ...peopleAtEventsIds];
+  const teacherIds = !_.isEmpty(response.events)
+    ? Object.values(response.events).map(event => event.teacher_id) : [];
+  const composerIds = !_.isEmpty(response.repertoire)
+    ? Object.values(response.repertoire).map(repertoireItem => repertoireItem.composer_id) : [];
+  const exerciseDeviserIds = !_.isEmpty(response.exercises)
+    ? Object.values(response.exercises).map(exercise => exercise.teacher_who_created_it_id) : [];
+  const peopleAtEventsIds = !_.isEmpty(response.people_at_events)
+    ? Object.values(response.people_at_events).map(personAtEvent => personAtEvent.person_id) : [];
+  const peopleIds = [
+    ...teacherIds,
+    ...composerIds,
+    ...exerciseDeviserIds,
+    ...peopleAtEventsIds,
+  ];
   const peopleIdsAsString = generateStringListForSqlQuery(peopleIds);
   return knex.raw(`
     SELECT
@@ -158,5 +172,6 @@ const getEventsAndRepertoireAndExercisePeople = response => {
 
 export const getEventsAndRepertoireAndExercisePeopleAndAddToResponse = response => getEventsAndRepertoireAndExercisePeople(response)
   .then(peopleObject => {
+    if (!peopleObject || _.isEmpty(peopleObject)) return;
     response.people = peopleObject;
   });
