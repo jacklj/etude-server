@@ -186,62 +186,28 @@ eventsRouter.delete('/:id', (req, res) => {
 });
 
 eventsRouter.post('/:eventId/repertoire', (req, res) => {
+  // Doesn't resolve repertoire entity, because the user will already have that
+  // on the front end, having just selected it.
   const { eventId } = req.params;
   const { repertoireId } = req.body;
-  const type = ITEM_TYPES.PIECE;
-  const newItem = {
-    type,
+  const newRepertoireInstance = {
     event_id: eventId,
+    repertoire_id: repertoireId,
   };
-  knex('items')
-    .insert([newItem])
-    .returning(['id as item_id', 'type', 'event_id'])
+  knex('rep_or_exercise_instances')
+    .insert([newRepertoireInstance])
+    .returning(['rep_or_exercise_instance_id', 'event_id', 'repertoire_id'])
     .then(resultArray => resultArray[0])
-    .then(item => {
-      const newRepertoireItem = {
-        repertoire_id: repertoireId,
-        item_id: item.item_id,
-      };
-      return knex('repertoire_instances')
-        .insert([newRepertoireItem])
-        .returning(['id as repertoire_instance_id', 'repertoire_id', 'item_id'])
-        .then(resultArray => resultArray[0])
-        .then(repertoireInstance => knex('repertoire') // resolve piece details
-          .where({ id: repertoireInstance.repertoire_id })
-          .first(
-            'name',
-            'composer_id',
-            'composition_date',
-            'larger_work',
-            'character_that_sings_it',
-          )
-          .then(repertoire => ({
-            ...repertoire,
-            ...repertoireInstance,
-          })))
-        .then(repertoireInstance => {
-          const newRepertoireInstance = { ...repertoireInstance };
-          return knex('people')
-            .where({ id: repertoireInstance.composer_id })
-            .first()
-            .then(composer => {
-              newRepertoireInstance.composer = composer;
-              delete newRepertoireInstance.composer_id;
-              return newRepertoireInstance;
-            });
-        })
-        .then(repertoireInstance => ({
-          ...item,
-          ...repertoireInstance,
-        }));
-    })
     .then(result => {
+      const normalizedResponse = {
+        rep_or_exercise_instances: {
+          [result.rep_or_exercise_instance_id]: result,
+        },
+      };
       console.log( // eslint-disable-line no-console
-        `New repertoire instance added (item_id: ${result.item_id}, repertoire_instance_id: ${
-          result.repertoire_instance_id
-        })`,
+        `New repertoire instance added (rep_or_exercise_instance_id: ${result.rep_or_exercise_instance_id})`,
       );
-      res.status(200).json(result);
+      res.status(200).json(normalizedResponse);
     })
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
@@ -250,63 +216,28 @@ eventsRouter.post('/:eventId/repertoire', (req, res) => {
 });
 
 eventsRouter.post('/:eventId/exercises', (req, res) => {
+  // Doesn't resolve repertoire entity, because the user will already have that
+  // on the front end, having just selected it.
   const { eventId } = req.params;
   const { exerciseId } = req.body;
-  const type = ITEM_TYPES.EXERCISE;
-  const newItem = {
-    type,
+  const newExerciseInstance = {
     event_id: eventId,
+    exercise_id: exerciseId,
   };
-  knex('items')
-    .insert([newItem])
-    .returning(['id as item_id', 'type', 'event_id'])
+  knex('rep_or_exercise_instances')
+    .insert([newExerciseInstance])
+    .returning(['rep_or_exercise_instance_id', 'event_id', 'exercise_id'])
     .then(resultArray => resultArray[0])
-    .then(item => {
-      const newExerciseItem = {
-        exercise_id: exerciseId,
-        item_id: item.item_id,
-      };
-      return knex('exercise_instances')
-        .insert([newExerciseItem])
-        .returning(['id as exercise_instance_id', 'exercise_id', 'item_id'])
-        .then(resultArray => resultArray[0])
-        .then(exerciseInstance => knex('exercises') // resolve exercise details
-          .where({ id: exerciseInstance.exercise_id })
-          .first(
-            'name',
-            'score',
-            'range_lowest_note',
-            'range_highest_note',
-            'details',
-            'teacher_who_created_it_id',
-          )
-          .then(exercise => ({
-            ...exercise,
-            ...exerciseInstance,
-          })))
-        .then(exerciseInstance => {
-          const newExerciseInstance = { ...exerciseInstance };
-          return knex('people')
-            .where({ id: exerciseInstance.teacher_who_created_it_id })
-            .first()
-            .then(teacher => {
-              newExerciseInstance.teacher_who_created_it = teacher;
-              delete newExerciseInstance.teacher_who_created_it_id;
-              return newExerciseInstance;
-            });
-        })
-        .then(exerciseInstance => ({
-          ...item,
-          ...exerciseInstance,
-        }));
-    })
     .then(result => {
+      const normalizedResponse = {
+        rep_or_exercise_instances: {
+          [result.rep_or_exercise_instance_id]: result,
+        },
+      };
       console.log( // eslint-disable-line no-console
-        `New exercise instance added (item_id: ${result.item_id}, exercise_instance_id: ${
-          result.exercise_instance_id
-        })`,
+        `New exercise instance added (rep_or_exercise_instance_id: ${result.rep_or_exercise_instance_id})`,
       );
-      res.status(200).json(result);
+      res.status(200).json(normalizedResponse);
     })
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
