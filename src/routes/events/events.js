@@ -1,5 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import _ from 'lodash';
+
 import knex from '../../knex';
 import { EVENT_TYPES, ITEM_TYPES } from '../../constants';
 import {
@@ -12,7 +14,6 @@ import {
   getPerformancesTableFields,
   getEventGeneralNotes,
   getEventLocation,
-  resolveEventSubtype,
   conditionallyUpdateEventsRecord,
   conditionallyUpdateLessonsRecord,
   conditionallyUpdateMasterclassRecord,
@@ -27,6 +28,7 @@ import {
   getEventsAndRepertoireAndExercisePeopleAndAddToResponse,
   getPeopleAtEventsAndAddToResponse,
 } from '../../services/normalizedQueries';
+import { NoEventsError, EventNotFoundError } from '../../services/errors';
 import { renderUpdateEventLogMessage } from '../../services/logging';
 import lessonsRouter from './lessons';
 import masterclassesRouter from './masterclasses';
@@ -48,6 +50,7 @@ eventsRouter.get('/', (req, res) => {
   knex('events_master')
     .select('*')
     .then(events => {
+      if (_.isEmpty(events)) throw new NoEventsError('hi');
       response.events = convertArrayIntoObjectIndexedByIds(events, 'event_id');
     })
     .then(() => getEventsLocationsAndAddToResponse(response.events, response))
@@ -59,25 +62,44 @@ eventsRouter.get('/', (req, res) => {
     .then(() => getEventsAndRepertoireAndExercisePeopleAndAddToResponse(response))
     .then(() => res.status(200).json(response))
     .catch(error => {
-      console.warn(error); // eslint-disable-line no-console
-      res.status(400).json(error);
+      if (error instanceof NoEventsError) {
+        console.warn('404: no events found.'); // eslint-disable-line no-console
+        res.status(404).send('No events found.');
+      } else {
+        // catch all other errors
+        console.warn(error); // eslint-disable-line no-console
+        res.status(400).json(error);
+      }
     });
 });
 
 eventsRouter.get('/:id', (req, res) => {
   const eventId = req.params.id;
-  knex('events')
-    .where({ id: eventId })
-    .first('id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress')
-    .then(getEventLocation)
-    .then(resolveEventSubtype)
-    .then(getPeopleAtEvent)
-    .then(getEventItems)
-    .then(getEventGeneralNotes)
-    .then(lesson => res.status(200).json(lesson))
+  const response = {};
+  knex('events_master')
+    .where({ event_id: eventId })
+    .select('*')
+    .then(eventsArray => {
+      if (_.isEmpty(eventsArray)) throw new EventNotFoundError();
+      response.events = convertArrayIntoObjectIndexedByIds(eventsArray, 'event_id');
+    })
+    .then(() => getEventsLocationsAndAddToResponse(response.events, response))
+    .then(() => getPeopleAtEventsAndAddToResponse(response.events, response))
+    .then(() => getEventsRepOrExerciseInstancesAndAddToResponse(response.events, response))
+    .then(() => getInstanceRepertoireAndAddToResponse(response.rep_or_exercise_instances, response))
+    .then(() => getInstanceExercisesAndAddToResponse(response.rep_or_exercise_instances, response))
+    .then(() => getEventsNotesAndAddToResponse(response.events, response))
+    .then(() => getEventsAndRepertoireAndExercisePeopleAndAddToResponse(response))
+    .then(() => res.status(200).json(response))
     .catch(error => {
-      console.warn(error); // eslint-disable-line no-console
-      res.status(400).json(error);
+      if (error instanceof EventNotFoundError) {
+        console.warn(`404: event with id ${eventId} not found.`); // eslint-disable-line no-console
+        res.status(404).send(`Event with id ${eventId} not found.`);
+      } else {
+        // catch all other errors
+        console.warn(error); // eslint-disable-line no-console
+        res.status(400).json(error);
+      }
     });
 });
 
@@ -111,11 +133,11 @@ eventsRouter.put('/:id', (req, res) => {
     .then(getEventGeneralNotes)
     .then(result => {
       const logMessage = renderUpdateEventLogMessage(result);
-      console.log(logMessage);
+      console.log(logMessage); // eslint-disable-line no-console
       res.status(200).json(result);
     })
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });
@@ -159,11 +181,11 @@ eventsRouter.delete('/:id', (req, res) => {
       .where({ id: eventId })
       .del())
     .then(() => {
-      console.log(`Event deleted (id: ${eventId})`);
+      console.log(`Event deleted (id: ${eventId})`); // eslint-disable-line no-console
       res.status(200).json({}); // HTTP 200 expects body - return empty JSON object
     })
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });
@@ -219,7 +241,7 @@ eventsRouter.post('/:eventId/repertoire', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(
+      console.log( // eslint-disable-line no-console
         `New repertoire instance added (item_id: ${result.item_id}, repertoire_instance_id: ${
           result.repertoire_instance_id
         })`,
@@ -227,7 +249,7 @@ eventsRouter.post('/:eventId/repertoire', (req, res) => {
       res.status(200).json(result);
     })
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });
@@ -284,7 +306,7 @@ eventsRouter.post('/:eventId/exercises', (req, res) => {
         }));
     })
     .then(result => {
-      console.log(
+      console.log( // eslint-disable-line no-console
         `New exercise instance added (item_id: ${result.item_id}, exercise_instance_id: ${
           result.exercise_instance_id
         })`,
@@ -292,7 +314,7 @@ eventsRouter.post('/:eventId/exercises', (req, res) => {
       res.status(200).json(result);
     })
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });
@@ -302,7 +324,7 @@ eventsRouter.get('/in_progress', (req, res) => knex('events')
   .select()
   .then(result => res.status(200).json(result))
   .catch(error => {
-    console.warn(error);
+    console.warn(error); // eslint-disable-line no-console
     res.status(400).json(error);
   }));
 

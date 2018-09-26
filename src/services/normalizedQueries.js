@@ -7,9 +7,11 @@ import {
 } from '../helpers';
 
 const getEventsLocations = events => {
+  if (_.isEmpty(events)) return Promise.resolve(undefined);
   const locationIds = Object.values(events)
     .filter(event => event.location_id)
     .map(event => event.location_id);
+  if (_.isEmpty(locationIds)) return Promise.resolve(undefined);
   const locationsAsString = generateStringListForSqlQuery(locationIds);
   return knex.raw(`
     SELECT
@@ -30,6 +32,7 @@ export const getEventsLocationsAndAddToResponse = (events, response) => getEvent
   });
 
 const getEventsRepOrExerciseInstances = events => {
+  if (_.isEmpty(events)) return Promise.resolve(undefined);
   const eventIdsAsString = Object.values(events)
     .map(event => event.event_id)
     .toString();
@@ -51,9 +54,11 @@ export const getEventsRepOrExerciseInstancesAndAddToResponse = (events, response
   });
 
 const getInstancesRepertoire = repOrExerciseInstances => {
+  if (_.isEmpty(repOrExerciseInstances)) return Promise.resolve(undefined);
   const repertoireIds = Object.values(repOrExerciseInstances)
     .filter(repOrExerciseInstance => repOrExerciseInstance.repertoire_id)
     .map(repInstance => repInstance.repertoire_id);
+  if (_.isEmpty(repertoireIds)) return Promise.resolve(undefined);
   const repertoireIdsAsString = generateStringListForSqlQuery(repertoireIds);
   return knex.raw(`
     SELECT
@@ -77,9 +82,11 @@ export const getInstanceRepertoireAndAddToResponse = (repOrExerciseInstances, re
   });
 
 const getInstanceExercises = repOrExerciseInstances => {
+  if (_.isEmpty(repOrExerciseInstances)) return Promise.resolve(undefined);
   const exerciseIds = Object.values(repOrExerciseInstances)
     .filter(repOrExerciseInstance => repOrExerciseInstance.exercise_id)
     .map(exerciseInstance => exerciseInstance.exercise_id);
+  if (_.isEmpty(exerciseIds)) return Promise.resolve(undefined);
   const exerciseIdsAsString = generateStringListForSqlQuery(exerciseIds);
   return knex.raw(`
     SELECT
@@ -100,6 +107,7 @@ export const getInstanceExercisesAndAddToResponse = (repOrExerciseInstances, res
   });
 
 const getEventsNotes = events => {
+  if (_.isEmpty(events)) return Promise.resolve(undefined);
   const eventIdsAsString = Object.values(events)
     .map(event => event.event_id)
     .toString();
@@ -121,6 +129,7 @@ export const getEventsNotesAndAddToResponse = (events, response) => getEventsNot
   });
 
 const getPeopleAtEvents = events => {
+  if (_.isEmpty(events)) return Promise.resolve(undefined);
   const eventIdsAsString = Object.values(events)
     .map(event => event.event_id)
     .toString();
@@ -158,6 +167,7 @@ const getEventsAndRepertoireAndExercisePeople = response => {
     ...exerciseDeviserIds,
     ...peopleAtEventsIds,
   ];
+  if (_.isEmpty(peopleIds)) return Promise.resolve(undefined);
   const peopleIdsAsString = generateStringListForSqlQuery(peopleIds);
   return knex.raw(`
     SELECT

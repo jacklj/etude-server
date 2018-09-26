@@ -13,7 +13,7 @@ export const renderUpdateEventLogMessage = event => {
 };
 
 export const renderCreateNoteLogMessage = note => {
-  let message = `New note added (id: ${note.note_id})`
+  let message = `New note added (id: ${note.note_id})`;
   if (note.event_id) {
     message = `${message} to event ${note.event_id}`;
   } else if (note.item_id) {
