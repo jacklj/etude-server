@@ -50,7 +50,7 @@ eventsRouter.get('/', (req, res) => {
   knex('events_master')
     .select('*')
     .then(events => {
-      if (_.isEmpty(events)) throw new NoEventsError('hi');
+      if (_.isEmpty(events)) throw new NoEventsError();
       response.events = convertArrayIntoObjectIndexedByIds(events, 'event_id');
     })
     .then(() => getEventsLocationsAndAddToResponse(response.events, response))
@@ -104,12 +104,20 @@ eventsRouter.get('/:id', (req, res) => {
 });
 
 eventsRouter.put('/:id', (req, res) => {
+  // Don't include other entities in response - any changes should not have
+  // referenced any entities that the front end doesn't already have.
+  // e.g. if the user has changed the location, they must have selected one
+  // that is already in the front end's data store, so no need to return it again.
   const eventId = req.params.id;
-  // 1. update event fields in db
+  // 1. update events table
   const eventsRecord = getEventsTableFields(req.body);
   conditionallyUpdateEventsRecord(eventsRecord, eventId)
     .then(result => {
-      // 2. update event subtype fields
+      if (_.isEmpty(result)) throw new EventNotFoundError();
+      return result;
+    })
+    .then(result => {
+      // 2. update event subtype tables
       switch (result.type) {
         case EVENT_TYPES.LESSON: {
           const lessonsRecord = getLessonsTableFields(req.body);
@@ -127,18 +135,24 @@ eventsRouter.put('/:id', (req, res) => {
           return Promise.resolve(result); // just resolve with the event object
       }
     })
-    // 2. resolve full lesson object
-    .then(getEventLocation)
-    .then(getEventItems)
-    .then(getEventGeneralNotes)
     .then(result => {
       const logMessage = renderUpdateEventLogMessage(result);
       console.log(logMessage); // eslint-disable-line no-console
-      res.status(200).json(result);
+      const normalizedResponse = {
+        events: {
+          [result.event_id]: result,
+        },
+      };
+      res.status(200).json(normalizedResponse);
     })
     .catch(error => {
-      console.warn(error); // eslint-disable-line no-console
-      res.status(400).json(error);
+      if (error instanceof EventNotFoundError) {
+        console.warn(`404: event with id ${eventId} not found.`); // eslint-disable-line no-console
+        res.status(404).send(`Event with id ${eventId} not found.`);
+      } else {
+        console.warn(error); // eslint-disable-line no-console
+        res.status(400).json(error);
+      }
     });
 });
 
