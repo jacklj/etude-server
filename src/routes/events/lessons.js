@@ -37,13 +37,13 @@ lessonsRouter.post('/', (req, res) => {
           [result.event_id]: result,
         },
       };
-      console.log(
+      console.log( // eslint-disable-line no-console
         `New lesson added (event_id: ${result.event_id}, lesson_id: ${result.lesson_id})`,
       );
       res.status(200).json(normalizedResponse);
     })
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });

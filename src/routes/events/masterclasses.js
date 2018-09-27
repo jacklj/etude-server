@@ -37,7 +37,7 @@ masterclassesRouter.post('/', (req, res) => {
           [result.event_id]: result,
         },
       };
-      console.log(
+      console.log( // eslint-disable-line no-console
         `New masterclass added (event_id: ${result.event_id}, masterclass_id: ${
           result.masterclass_id
         })`,
@@ -45,7 +45,7 @@ masterclassesRouter.post('/', (req, res) => {
       res.status(200).json(normalizedResponse);
     })
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });
