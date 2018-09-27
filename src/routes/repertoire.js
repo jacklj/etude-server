@@ -11,18 +11,16 @@ router.get('/api/repertoire', (req, res) => {
   // all of them
   knex.raw(`
     SELECT
-      id as repertoire_id,
-      name,
-      composer_id,
-      composition_date,
-      larger_work,
+      repertoire_id, name, composer_id, composition_date, larger_work,
       character_that_sings_it
     FROM
       repertoire
   `)
     .then(result => result.rows)
-    .then(repertoireArray => convertArrayIntoObjectIndexedByIds(repertoireArray, 'repertoire_id'))
-    .then(repertoire => res.status(200).json(repertoire))
+    .then(repertoireArray => ({
+      repertoire: convertArrayIntoObjectIndexedByIds(repertoireArray, 'repertoire_id'),
+    }))
+    .then(normalizedResponse => res.status(200).json(normalizedResponse))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
