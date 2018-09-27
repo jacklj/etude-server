@@ -11,18 +11,20 @@ const masterclassesRouter = express.Router();
 masterclassesRouter.use(bodyParser.json());
 
 masterclassesRouter.post('/', (req, res) => {
+  // dont return teacher entity, because the user will already have it on the
+  // front end
   const eventsRecord = getEventsTableFields(req.body);
   eventsRecord.type = EVENT_TYPES.MASTERCLASS; // in case not included in request body
   const masterclassesRecord = getMasterclassesTableFields(req.body);
   knex('events')
     .insert([eventsRecord])
-    .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
+    .returning(['event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
     .then(resultArray => resultArray[0])
     .then(result => {
       masterclassesRecord.event_id = result.event_id;
       return knex('masterclasses')
         .insert([masterclassesRecord])
-        .returning(['id as masterclass_id', 'teacher_id'])
+        .returning(['masterclass_id', 'teacher_id'])
         .then(resultArray => resultArray[0])
         .then(masterclassesResult => ({
           ...result,
@@ -30,12 +32,17 @@ masterclassesRouter.post('/', (req, res) => {
         }));
     })
     .then(result => {
+      const normalizedResponse = {
+        events: {
+          [result.event_id]: result,
+        },
+      };
       console.log(
         `New masterclass added (event_id: ${result.event_id}, masterclass_id: ${
           result.masterclass_id
         })`,
       );
-      res.status(200).json(result);
+      res.status(200).json(normalizedResponse);
     })
     .catch(error => {
       console.warn(error);
