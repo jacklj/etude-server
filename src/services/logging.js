@@ -15,9 +15,9 @@ export const renderUpdateEventLogMessage = event => {
 export const renderCreateNoteLogMessage = note => {
   let message = `New note added (id: ${note.note_id})`;
   if (note.event_id) {
-    message = `${message} to event ${note.event_id}`;
-  } else if (note.item_id) {
-    message = `${message} to item ${note.item_id}`;
+    message = `${message} to event (id: ${note.event_id})`;
+  } else if (note.rep_or_exercise_instance_id) {
+    message = `${message} to rep_or_exercise_instance (id: ${note.rep_or_exercise_instance_id})`;
   }
   return message;
 };
