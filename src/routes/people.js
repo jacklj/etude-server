@@ -26,18 +26,17 @@ router.get('/api/people', (req, res) => {
 router.get('/api/people/teachers', (req, res) => {
   knex.raw(`
     SELECT
-      id as person_id,
-      first_name,
-      surname,
-      role
+      person_id, first_name, surname, role
     FROM
       people
     WHERE
       role='Teacher'
   `)
     .then(result => result.rows)
-    .then(teachersArray => convertArrayIntoObjectIndexedByIds(teachersArray, 'person_id'))
-    .then(teachers => res.status(200).json(teachers))
+    .then(teachersArray => ({
+      people: convertArrayIntoObjectIndexedByIds(teachersArray, 'person_id'),
+    }))
+    .then(normalizedResponse => res.status(200).json(normalizedResponse))
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
