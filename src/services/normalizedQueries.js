@@ -154,13 +154,25 @@ const getEventsAndRepertoireAndExercisePeople = response => {
   // people: lesson and masterclass teachers, composers,
   // teacher_who_invented_exercises, people_at_events
   const teacherIds = !_.isEmpty(response.events)
-    ? Object.values(response.events).map(event => event.teacher_id) : [];
+    ? Object.values(response.events)
+      .map(event => event.teacher_id)
+      .filter(x => x) // only include actual teacherIds (filter out null values)
+    : [];
   const composerIds = !_.isEmpty(response.repertoire)
-    ? Object.values(response.repertoire).map(repertoireItem => repertoireItem.composer_id) : [];
+    ? Object.values(response.repertoire)
+      .map(repertoireItem => repertoireItem.composer_id)
+      .filter(x => x) // only include actual teacherIds (filter out null values)
+    : [];
   const exerciseDeviserIds = !_.isEmpty(response.exercises)
-    ? Object.values(response.exercises).map(exercise => exercise.teacher_who_created_it_id) : [];
+    ? Object.values(response.exercises)
+      .map(exercise => exercise.teacher_who_created_it_id)
+      .filter(x => x) // only include actual teacherIds (filter out null values)
+    : [];
   const peopleAtEventsIds = !_.isEmpty(response.people_at_events)
-    ? Object.values(response.people_at_events).map(personAtEvent => personAtEvent.person_id) : [];
+    ? Object.values(response.people_at_events)
+      .map(personAtEvent => personAtEvent.person_id)
+      .filter(x => x) // only include actual teacherIds (filter out null values)
+    : [];
   const peopleIds = [
     ...teacherIds,
     ...composerIds,
