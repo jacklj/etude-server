@@ -13,9 +13,9 @@ lessonsRouter.use(bodyParser.json());
 lessonsRouter.post('/', (req, res) => {
   // dont return teacher entity, because the user will already have it on the
   // front end
-  const eventsRecord = getEventsTableFields(req.body);
+  const eventsRecord = getEventsTableFields(req.body) || {}; // in case body has no event details
   eventsRecord.type = EVENT_TYPES.LESSON; // in case not included in request body
-  const lessonsRecord = getLessonsTableFields(req.body);
+  const lessonsRecord = getLessonsTableFields(req.body) || {}; // in case body has no lesson details
   knex('events')
     .insert([eventsRecord])
     .returning(['event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
