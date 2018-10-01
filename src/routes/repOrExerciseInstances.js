@@ -5,7 +5,7 @@ import knex from '../knex';
 const router = express.Router();
 
 router.delete('/api/rep_or_exercise_instances/:id', (req, res) => {
-  // but you'll lose the link between notes and repertoire or exercises
+  // TODO 1st October 2018 but you'll lose the link between notes and repertoire or exercises
   const repOrExerciseInstanceId = req.params.id;
   knex.raw(`
     DELETE FROM rep_or_exercise_instances
