@@ -32,17 +32,31 @@ router.get('/api/repertoire', (req, res) => {
 // Trying to do pure queries, no 'IN(...string list...)'
 router.get('/api/repertoire/upcoming', (req, res) => {
   const response = {};
-  // 1. get all repertoire_instances in future
+  // get all events in future with repertoire attached
   knex.raw(`
     SELECT
-      rep_or_exercise_instance_id,
-      rep_or_exercise_instances.event_id,
-      repertoire_id
-    FROM events
-    INNER JOIN rep_or_exercise_instances ON rep_or_exercise_instances.event_id=events.event_id
-    WHERE
-      events.end > CURRENT_DATE AND rep_or_exercise_instances.repertoire_id IS NOT NULL;
+      events_master.event_id, start, events_master.end, location_id, in_progress,
+      rating, type, performance_id, name, performance_type, details, lesson_id,
+      masterclass_id, teacher_id
+    FROM events_master
+    INNER JOIN rep_or_exercise_instances ON rep_or_exercise_instances.event_id=events_master.event_id
+    WHERE events_master.end > CURRENT_DATE AND rep_or_exercise_instances.repertoire_id IS NOT NULL;
   `)
+    .then(result => {
+      const events = result.rows;
+      response.events = convertArrayIntoObjectIndexedByIds(events, 'event_id');
+    })
+    // then the relevant repOrExerciseInstances
+    .then(() => knex.raw(`
+      SELECT
+        rep_or_exercise_instance_id,
+        rep_or_exercise_instances.event_id,
+        repertoire_id
+      FROM events
+      INNER JOIN rep_or_exercise_instances ON rep_or_exercise_instances.event_id=events.event_id
+      WHERE
+        events.end > CURRENT_DATE AND rep_or_exercise_instances.repertoire_id IS NOT NULL;
+    `))
     .then(result => {
       const rOeInstances = result.rows;
       response.rep_or_exercise_instances = convertArrayIntoObjectIndexedByIds(rOeInstances, 'rep_or_exercise_instance_id');
