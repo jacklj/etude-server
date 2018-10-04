@@ -11,14 +11,19 @@ thoughtsRouter.post('/', (req, res) => {
   newEvent.type = EVENT_TYPES.THOUGHT;
   knex('events')
     .insert([newEvent])
-    .returning(['id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
+    .returning(['event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
     .then(resultArray => resultArray[0])
     .then(result => {
-      console.log(`New thought added (id: ${result.id})`);
-      res.status(200).json(result);
+      const normalizedResponse = {
+        events: {
+          [result.event_id]: result,
+        },
+      };
+      console.log(`New thought added (id: ${result.event_id})`); // eslint-disable-line no-console
+      res.status(200).json(normalizedResponse);
     })
     .catch(error => {
-      console.warn(error);
+      console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
     });
 });

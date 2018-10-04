@@ -1,10 +1,10 @@
 import {
-  EVENT_TYPES, ITEM_TYPES, NOTE_TYPES, PERFORMANCE_TYPES,
+  EVENT_TYPES, NOTE_TYPES, PERFORMANCE_TYPES,
 } from '../../constants';
 
 exports.up = knex => knex.schema
   .createTable('locations', table => {
-    table.increments('id').primary();
+    table.increments('location_id').primary();
     table.string('name');
     table.string('address_line_1');
     table.string('address_line_2');
@@ -13,9 +13,10 @@ exports.up = knex => knex.schema
     table.string('postcode');
     table.string('website');
   })
-  .createTable('events', table => { // events are things that will go in the timeline
-    // supertype
-    table.increments('id').primary();
+  .createTable('events', table => {
+    // events are things that will go in the timeline
+    // non abstract supertype - e.g. lessons have a subtype, practice doesnt
+    table.increments('event_id').primary();
     table.dateTime('start');
     table.dateTime('end');
     table.enu('type', [
@@ -28,40 +29,46 @@ exports.up = knex => knex.schema
     ]);
     table
       .integer('location_id')
-      .references('id')
+      .references('location_id')
       .inTable('locations');
     table.integer('rating');
   })
+  .raw(`
+    ALTER TABLE events
+    ADD COLUMN "in_progress" BOOLEAN NOT NULL DEFAULT FALSE;
+    create unique index on events ("in_progress")
+    where "in_progress" = true;
+  `)
   .createTable('people', table => {
-    table.increments('id').primary();
+    table.increments('person_id').primary();
     table.string('first_name');
     table.string('surname');
     table.string('role');
   })
   .createTable('lessons', table => {
-    table.increments('id').primary();
+    table.increments('lesson_id').primary();
     table
       .integer('event_id')
-      .references('id')
+      .references('event_id')
       .inTable('events');
     table
       .integer('teacher_id')
-      .references('id')
+      .references('person_id')
       .inTable('people');
   })
   .createTable('masterclasses', table => {
-    table.increments('id').primary();
+    table.increments('masterclass_id').primary();
     table
       .integer('event_id')
-      .references('id')
+      .references('event_id')
       .inTable('events');
     table
       .integer('teacher_id')
-      .references('id')
+      .references('person_id')
       .inTable('people');
   })
   .createTable('performances', table => {
-    table.increments('id').primary();
+    table.increments('performance_id').primary();
     table.string('name');
     table.text('details', 'longtext'); // in case display in public diary
     table.enu('type', [
@@ -73,72 +80,36 @@ exports.up = knex => knex.schema
     ]);
     table
       .integer('event_id')
-      .references('id')
+      .references('event_id')
       .inTable('events');
   })
   .createTable('people_at_events', table => {
     // attach people to events
-    table.increments('id').primary();
+    table.increments('person_at_event_id').primary();
     table
       .integer('event_id')
-      .references('id')
+      .references('event_id')
       .inTable('events')
       .onDelete('cascade');
     table
       .integer('person_id')
-      .references('id')
+      .references('person_id')
       .inTable('people')
       .onDelete('cascade');
   })
-  .createTable('items', table => {
-    // supertype of repertoire instances, exercise instances, thoughts
-    table.increments('id').primary();
-    table.enu('type', [
-      ITEM_TYPES.PIECE,
-      ITEM_TYPES.EXERCISE,
-      ITEM_TYPES.THOUGHT,
-      ITEM_TYPES.PHYSICAL_EXERCISE,
-      ITEM_TYPES.GENERAL,
-      ITEM_TYPES.OTHER,
-    ]);
-    table
-      .integer('event_id')
-      .references('id')
-      .inTable('events');
-  })
-  .createTable('notes', table => {
-    table.increments('id').primary();
-    table.text('note', 'longtext');
-    table.text('score', 'longtext');
-    table.enu('type', [NOTE_TYPES.TECHNICAL, NOTE_TYPES.INTERPRETATIONAL, NOTE_TYPES.GENERAL]);
-    // can attach notes to items or, more generally, events. Only one of the
-    // foreign keys should be populated, per record.
-    // trying this implementation (multiple FKs, one table), rather than subtyping
-    // notes and having 2 further tables, item_notes and event_notes
-    // TODO 16/7/2018 wait and see how convenient this way is.
-    table
-      .integer('item_id')
-      .references('id')
-      .inTable('items');
-    table
-      .integer('event_id')
-      .references('id')
-      .inTable('events');
-  })
-// .raw('ALTER TABLE "notes" ADD CONSTRAINT NOT ("item_id" NOT NULL AND "event_id" NOT NULL);')
   .createTable('repertoire', table => {
-    table.increments('id').primary();
+    table.increments('repertoire_id').primary();
     table.string('name');
     table
       .integer('composer_id')
-      .references('id')
+      .references('person_id')
       .inTable('people');
     table.date('composition_date');
     table.string('larger_work');
     table.string('character_that_sings_it');
   })
   .createTable('exercises', table => {
-    table.increments('id').primary();
+    table.increments('exercise_id').primary();
     table.string('name');
     table.text('score', 'longtext');
     table.string('range_lowest_note');
@@ -146,43 +117,97 @@ exports.up = knex => knex.schema
     table.text('details', 'longtext');
     table
       .integer('teacher_who_created_it_id')
-      .references('id')
+      .references('person_id')
       .inTable('people');
   })
-  .createTable('repertoire_instances', table => {
-    table.increments('id').primary();
+  .createTable('rep_or_exercise_instances', table => {
+    // a piece or exercise, attached to an event
+    table.increments('rep_or_exercise_instance_id').primary();
+    table
+      .integer('event_id')
+      .references('event_id')
+      .inTable('events');
     table
       .integer('repertoire_id')
-      .references('id')
+      .references('repertoire_id')
       .inTable('repertoire');
     table
-      .integer('item_id')
-      .references('id')
-      .inTable('items');
-  })
-  .createTable('exercise_instances', table => {
-    table.increments('id').primary();
-    table
       .integer('exercise_id')
-      .references('id')
+      .references('exercise_id')
       .inTable('exercises');
+  })
+  .raw(`
+    ALTER TABLE rep_or_exercise_instances
+    ADD CHECK((repertoire_id IS NULL) != (exercise_id IS NULL));
+  `)
+  .createTable('notes', table => {
+    table.increments('note_id').primary();
+    table.text('note', 'longtext');
+    table.text('score', 'longtext');
+    table.enu('type', [NOTE_TYPES.TECHNICAL, NOTE_TYPES.INTERPRETATIONAL, NOTE_TYPES.GENERAL]);
+    // can attach notes to rep/exercise instances or, more generally, events.
+    // Only one of the foreign keys should be set per record - see CHECK below.
     table
-      .integer('item_id')
-      .references('id')
-      .inTable('items');
-  });
+      .integer('rep_or_exercise_instance_id')
+      .references('rep_or_exercise_instance_id')
+      .inTable('rep_or_exercise_instances');
+    table
+      .integer('event_id')
+      .references('event_id')
+      .inTable('events');
+  })
+  .raw(`
+    ALTER TABLE notes
+    ADD CHECK((rep_or_exercise_instance_id IS NULL) != (event_id IS NULL));
+  `)
+  .createTable('other_rep_to_work_on', table => {
+    // rep you want to work on, that's not tied to a particular event
+    table.increments('other_rep_to_work_on_id').primary();
+    table
+      .integer('repertoire_id')
+      .references('repertoire_id')
+      .inTable('repertoire');
+    table.dateTime('deadline');
+  })
+  // create views!
+  .raw(`
+    CREATE VIEW events_master AS
+    SELECT
+      events.event_id,
+      events.start,
+      events.end,
+      events.location_id,
+      events.in_progress,
+      events.rating,
+      events.type,
+      performances.performance_id,
+      performances.name,
+      performances.type AS performance_type,
+      performances.details,
+      lessons.lesson_id,
+      masterclasses.masterclass_id,
+      CASE
+        WHEN lessons.teacher_id IS NOT NULL THEN lessons.teacher_id
+        WHEN masterclasses.teacher_id IS NOT NULL THEN masterclasses.teacher_id
+        ELSE NULL
+      END AS teacher_id
+    FROM events
+      LEFT JOIN performances ON (events.event_id = performances.event_id)
+      LEFT JOIN lessons ON (events.event_id = lessons.event_id)
+      LEFT JOIN masterclasses ON (events.event_id = masterclasses.event_id);
+  `);
 
 exports.down = knex => knex.schema
+  .raw('DROP VIEW events_master;')
+  .dropTable('other_rep_to_work_on')
   .dropTable('people_at_events')
   .dropTable('notes')
-  .dropTable('repertoire_instances')
+  .dropTable('rep_or_exercise_instances')
   .dropTable('repertoire')
-  .dropTable('exercise_instances')
   .dropTable('exercises')
   .dropTable('lessons')
   .dropTable('masterclasses')
   .dropTable('performances')
   .dropTable('people')
-  .dropTable('items')
   .dropTable('events')
   .dropTable('locations');

@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 import knex from './knex';
 import { EVENT_TYPES, ITEM_TYPES } from './constants';
 
@@ -221,9 +223,7 @@ export const getEventGeneralNotes = event => knex('notes') // get general notes 
   });
 
 const returnUndefinedIfEmptyObject = obj => {
-  if (Object.keys(obj).length === 0 && obj.constructor === Object) {
-    return undefined;
-  }
+  if (_.isEmpty(obj)) return undefined;
   return obj;
 };
 
@@ -259,16 +259,16 @@ export const deleteAnyEventSubtypeRecords = eventId => deleteEventSubtypeRecord(
 export const conditionallyUpdateEventsRecord = (event, eventId) => {
   if (event) {
     return knex('events')
-      .where({ id: eventId })
+      .where({ event_id: eventId })
       .update(event)
-      .returning(['id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
+      .returning(['event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
       .then(resultArray => resultArray[0]);
   }
   // else get the event, because it's going to be an event subtype change, but we still
   // want to return the full event object
   return knex('events')
-    .where({ id: eventId })
-    .first('id as event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress');
+    .where({ event_id: eventId })
+    .first('event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress');
 };
 
 export const conditionallyUpdateLessonsRecord = (lesson, event, eventId) => {
@@ -276,24 +276,22 @@ export const conditionallyUpdateLessonsRecord = (lesson, event, eventId) => {
     return knex('lessons')
       .where({ event_id: eventId })
       .update(lesson)
-      .returning(['id as lesson_id', 'teacher_id'])
+      .returning(['lesson_id', 'teacher_id'])
       .then(resultArray => resultArray[0])
       .then(lessonsResult => ({
         ...event,
         ...lessonsResult,
-      }))
-      .then(getLessonTeacher); // resolve lesson teacher id to object
+      }));
   }
   // else get the lesson, because we must have done an Events table update, but
   // we still want to return the full lesson object
   return knex('lessons')
     .where({ event_id: eventId })
-    .first('id as lesson_id', 'teacher_id')
+    .first('lesson_id', 'teacher_id')
     .then(lessonsResult => ({
       ...event,
       ...lessonsResult,
-    }))
-    .then(getLessonTeacher); // resolve lesson teacher id to object
+    }));
 };
 
 export const conditionallyUpdateMasterclassRecord = (masterclass, event, eventId) => {
@@ -301,24 +299,22 @@ export const conditionallyUpdateMasterclassRecord = (masterclass, event, eventId
     return knex('masterclasses')
       .where({ event_id: eventId })
       .update(masterclass)
-      .returning(['id as masterclass_id', 'teacher_id'])
+      .returning(['masterclass_id', 'teacher_id'])
       .then(resultArray => resultArray[0])
       .then(masterclassesResult => ({
         ...event,
         ...masterclassesResult,
-      }))
-      .then(getMasterclassTeacher); // resolve lesson teacher id to object
+      }));
   }
   // else get the masterclass, because we must have done an Events table update, but
   // we still want to return the full masterclass object
   return knex('masterclasses')
     .where({ event_id: eventId })
-    .first('id as masterclass_id', 'teacher_id')
+    .first('masterclass_id', 'teacher_id')
     .then(masterclassesResult => ({
       ...event,
       ...masterclassesResult,
-    }))
-    .then(getMasterclassTeacher); // resolve lesson teacher id to object
+    }));
 };
 
 export const conditionallyUpdatePerformanceRecord = (performance, event, eventId) => {
@@ -326,7 +322,7 @@ export const conditionallyUpdatePerformanceRecord = (performance, event, eventId
     return knex('performances')
       .where({ event_id: eventId })
       .update(performance)
-      .returning(['id as performance_id', 'name', 'details', 'type as performance_type'])
+      .returning(['performance_id', 'name', 'details', 'type as performance_type'])
       .then(resultArray => resultArray[0])
       .then(performancesResult => ({
         ...event,
@@ -337,9 +333,38 @@ export const conditionallyUpdatePerformanceRecord = (performance, event, eventId
   // we still want to return the full performance object
   return knex('performances')
     .where({ event_id: eventId })
-    .first('id as performance_id', 'name', 'details', 'type as performance_type')
+    .first('performance_id', 'name', 'details', 'type as performance_type')
     .then(performancesResult => ({
       ...event,
       ...performancesResult,
     }));
 };
+
+
+const removeDuplicatesAndFalseyValues = list => {
+  const set = new Set(list);
+  const listWithoutFalseyValues = [...set].filter(item => item); // remove falsey values
+  return listWithoutFalseyValues;
+};
+
+export const generateStringListForSqlQuery = list => {
+  const removedDuplicatesAndFalseyValues = removeDuplicatesAndFalseyValues(list);
+  return removedDuplicatesAndFalseyValues.toString();
+};
+
+export const deleteNotesAttachedToEvent = eventId => knex('notes')
+  .where({ event_id: eventId })
+  .del();
+
+export const removeRepOrExerciseInstancesAttachedToEvent = eventId => knex
+// When you delete an event, set all its repOrExerciseInstances' event_id fields to null.
+// We don't want to delete them, because they link notes to pieces, so when you
+// look at all notes ever made on a piece or exercise, these notes are still there.
+  .raw(`
+    UPDATE
+      rep_or_exercise_instances
+    SET
+      event_id = NULL
+    WHERE
+      event_id = ${eventId}
+  `);
