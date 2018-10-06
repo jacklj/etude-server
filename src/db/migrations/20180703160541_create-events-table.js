@@ -34,10 +34,11 @@ exports.up = knex => knex.schema
       .references('location_id')
       .inTable('locations');
     table.integer('rating');
+    table.boolean('in_progress').notNullable().defaultTo(false);
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .raw(`
-    ALTER TABLE events
-    ADD COLUMN "in_progress" BOOLEAN NOT NULL DEFAULT FALSE;
     create unique index on events ("in_progress")
     where "in_progress" = true;
   `)
@@ -46,6 +47,8 @@ exports.up = knex => knex.schema
     table.string('first_name');
     table.string('surname');
     table.string('role');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('lessons', table => {
     table.increments('lesson_id').primary();
@@ -57,6 +60,8 @@ exports.up = knex => knex.schema
       .integer('teacher_id')
       .references('person_id')
       .inTable('people');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('masterclasses', table => {
     table.increments('masterclass_id').primary();
@@ -68,6 +73,8 @@ exports.up = knex => knex.schema
       .integer('teacher_id')
       .references('person_id')
       .inTable('people');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('performances', table => {
     table.increments('performance_id').primary();
@@ -84,6 +91,8 @@ exports.up = knex => knex.schema
       .integer('event_id')
       .references('event_id')
       .inTable('events');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('people_at_events', table => {
     // attach people to events
@@ -98,6 +107,8 @@ exports.up = knex => knex.schema
       .references('person_id')
       .inTable('people')
       .onDelete('cascade');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('repertoire', table => {
     table.increments('repertoire_id').primary();
@@ -109,6 +120,8 @@ exports.up = knex => knex.schema
     table.date('composition_date');
     table.string('larger_work');
     table.string('character_that_sings_it');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('exercises', table => {
     table.increments('exercise_id').primary();
@@ -121,6 +134,8 @@ exports.up = knex => knex.schema
       .integer('teacher_who_created_it_id')
       .references('person_id')
       .inTable('people');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('rep_or_exercise_instances', table => {
     // a piece or exercise, attached to an event
@@ -137,6 +152,8 @@ exports.up = knex => knex.schema
       .integer('exercise_id')
       .references('exercise_id')
       .inTable('exercises');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .raw(`
     ALTER TABLE rep_or_exercise_instances
@@ -157,6 +174,8 @@ exports.up = knex => knex.schema
       .integer('event_id')
       .references('event_id')
       .inTable('events');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .raw(`
     ALTER TABLE notes
@@ -170,6 +189,8 @@ exports.up = knex => knex.schema
       .references('repertoire_id')
       .inTable('repertoire');
     table.dateTime('deadline');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   // create views!
   .raw(`
@@ -208,17 +229,94 @@ exports.up = knex => knex.schema
     END;
     $$ LANGUAGE plpgsql;
   `)
-  // create trigger
+  // create triggers
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON events
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON exercises
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON lessons
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
   .raw(`
     CREATE TRIGGER update_timestamp
     BEFORE UPDATE ON locations
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON masterclasses
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON notes
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON other_rep_to_work_on
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON people
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON people_at_events
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON performances
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON rep_or_exercise_instances
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
+  `)
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON repertoire
     FOR EACH ROW
     EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
   `);
 
 exports.down = knex => knex.schema
   .raw('DROP VIEW events_master;')
+  .raw('DROP TRIGGER update_timestamp on events;')
+  .raw('DROP TRIGGER update_timestamp on exercises;')
+  .raw('DROP TRIGGER update_timestamp on lessons;')
   .raw('DROP TRIGGER update_timestamp on locations;')
+  .raw('DROP TRIGGER update_timestamp on masterclasses;')
+  .raw('DROP TRIGGER update_timestamp on notes;')
+  .raw('DROP TRIGGER update_timestamp on other_rep_to_work_on;')
+  .raw('DROP TRIGGER update_timestamp on people;')
+  .raw('DROP TRIGGER update_timestamp on people_at_events;')
+  .raw('DROP TRIGGER update_timestamp on performances;')
+  .raw('DROP TRIGGER update_timestamp on rep_or_exercise_instances;')
+  .raw('DROP TRIGGER update_timestamp on repertoire;')
   .raw('DROP FUNCTION trigger_set_updated_at_timestamp();')
   .dropTable('other_rep_to_work_on')
   .dropTable('people_at_events')
