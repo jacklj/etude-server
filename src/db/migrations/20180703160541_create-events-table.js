@@ -197,10 +197,29 @@ exports.up = knex => knex.schema
       LEFT JOIN performances ON (events.event_id = performances.event_id)
       LEFT JOIN lessons ON (events.event_id = lessons.event_id)
       LEFT JOIN masterclasses ON (events.event_id = masterclasses.event_id);
+  `)
+  // create trigger function for setting updated_at on every UPDATE
+  .raw(`
+    CREATE OR REPLACE FUNCTION trigger_set_updated_at_timestamp()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.updated_at = NOW();
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+  `)
+  // create trigger
+  .raw(`
+    CREATE TRIGGER update_timestamp
+    BEFORE UPDATE ON locations
+    FOR EACH ROW
+    EXECUTE PROCEDURE trigger_set_updated_at_timestamp();
   `);
 
 exports.down = knex => knex.schema
   .raw('DROP VIEW events_master;')
+  .raw('DROP TRIGGER update_timestamp on locations;')
+  .raw('DROP FUNCTION trigger_set_updated_at_timestamp();')
   .dropTable('other_rep_to_work_on')
   .dropTable('people_at_events')
   .dropTable('notes')
