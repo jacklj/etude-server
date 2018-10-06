@@ -12,6 +12,8 @@ exports.up = knex => knex.schema
     table.string('town_city');
     table.string('postcode');
     table.string('website');
+    table.specificType('created_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
+    table.specificType('updated_at', 'TIMESTAMPTZ').notNullable().defaultTo(knex.raw('now()'));
   })
   .createTable('events', table => {
     // events are things that will go in the timeline
