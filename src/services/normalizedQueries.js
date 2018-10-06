@@ -4,7 +4,7 @@ import knex from '../knex';
 import {
   convertArrayIntoObjectIndexedByIds,
   generateStringListForSqlQuery,
-} from '../helpers';
+} from './helpers';
 
 const getEventsLocations = events => {
   if (_.isEmpty(events)) return Promise.resolve(undefined);

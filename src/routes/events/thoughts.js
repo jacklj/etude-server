@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../../knex';
-import { EVENT_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../services/constants';
 
 const thoughtsRouter = express.Router();
 thoughtsRouter.use(bodyParser.json());

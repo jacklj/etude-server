@@ -1,11 +1,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../../knex';
-import { EVENT_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../services/constants';
 import {
   getEventsTableFields,
   getPerformancesTableFields,
-} from '../../helpers';
+} from '../../services/helpers';
 
 const performancesRouter = express.Router();
 performancesRouter.use(bodyParser.json());

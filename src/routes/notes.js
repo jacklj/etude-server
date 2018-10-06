@@ -2,7 +2,7 @@ import express from 'express';
 import knex from '../knex';
 
 import { renderCreateNoteLogMessage } from '../services/logging';
-import { convertArrayIntoObjectIndexedByIds } from '../helpers';
+import { convertArrayIntoObjectIndexedByIds } from '../services/helpers';
 
 const router = express.Router();
 

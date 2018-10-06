@@ -1,6 +1,6 @@
 import {
   EVENT_TYPES, NOTE_TYPES, PERFORMANCE_TYPES,
-} from '../../constants';
+} from '../../services/constants';
 
 exports.up = knex => knex.schema
   .createTable('locations', table => {

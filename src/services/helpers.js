@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import knex from './knex';
+import knex from '../knex';
 import { EVENT_TYPES, ITEM_TYPES } from './constants';
 
 export const convertArrayIntoObjectIndexedByIds = (array, idKey) => {

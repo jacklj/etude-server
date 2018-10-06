@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import _ from 'lodash';
 
 import knex from '../../knex';
-import { EVENT_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../services/constants';
 import {
   convertArrayIntoObjectIndexedByIds,
   deleteAnyEventSubtypeRecords,
@@ -17,7 +17,7 @@ import {
   conditionallyUpdatePerformanceRecord,
   deleteNotesAttachedToEvent,
   removeRepOrExerciseInstancesAttachedToEvent,
-} from '../../helpers';
+} from '../../services/helpers';
 import {
   getEventsLocationsAndAddToResponse,
   getEventsRepOrExerciseInstancesAndAddToResponse,

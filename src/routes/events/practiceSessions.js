@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../../knex';
-import { EVENT_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../services/constants';
 
 const practiceSessionsRouter = express.Router();
 practiceSessionsRouter.use(bodyParser.json());

@@ -1,7 +1,7 @@
 import express from 'express';
 import knex from '../knex';
 
-import { convertArrayIntoObjectIndexedByIds } from '../helpers';
+import { convertArrayIntoObjectIndexedByIds } from '../services/helpers';
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import moment from 'moment';
-import { EVENT_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../services/constants';
 
 export const seed = (knex) => knex('events') // eslint-disable-line import/prefer-default-export
   .insert([

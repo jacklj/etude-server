@@ -1,11 +1,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import knex from '../../knex';
-import { EVENT_TYPES } from '../../constants';
+import { EVENT_TYPES } from '../../services/constants';
 import {
   getEventsTableFields,
   getMasterclassesTableFields,
-} from '../../helpers';
+} from '../../services/helpers';
 
 const masterclassesRouter = express.Router();
 masterclassesRouter.use(bodyParser.json());
