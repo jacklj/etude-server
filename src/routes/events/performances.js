@@ -11,13 +11,14 @@ const performancesRouter = express.Router();
 performancesRouter.use(bodyParser.json());
 
 performancesRouter.post('/', (req, res) => {
-  const eventsRecord = getEventsTableFields(req.body);
+  const eventsRecord = getEventsTableFields(req.body) || {}; // in case body has no event details
   eventsRecord.type = EVENT_TYPES.PERFORMANCE; // overwrite the performance type with
   // this event type, for the event record
-  const performancesRecord = getPerformancesTableFields(req.body);
+  const performancesRecord = getPerformancesTableFields(req.body) || {};
+  // in case body has no performance details
   knex('events')
     .insert([eventsRecord])
-    .returning(['event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress'])
+    .returning(['event_id', 'start', 'end', 'type', 'location_id', 'rating', 'in_progress', 'created_at', 'updated_at'])
     .then(resultArray => resultArray[0])
     .then(result => {
       performancesRecord.event_id = result.event_id;
