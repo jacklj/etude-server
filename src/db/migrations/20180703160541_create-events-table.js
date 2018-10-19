@@ -80,7 +80,7 @@ exports.up = knex => knex.schema
     table.increments('performance_id').primary();
     table.string('name');
     table.text('details', 'longtext'); // in case display in public diary
-    table.enu('type', [
+    table.enu('performance_type', [
       PERFORMANCE_TYPES.CONCERT,
       PERFORMANCE_TYPES.OPERA,
       PERFORMANCE_TYPES.RECITAL,
@@ -205,7 +205,7 @@ exports.up = knex => knex.schema
       events.type,
       performances.performance_id,
       performances.name,
-      performances.type AS performance_type,
+      performances.performance_type,
       performances.details,
       lessons.lesson_id,
       masterclasses.masterclass_id,

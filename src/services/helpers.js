@@ -244,7 +244,7 @@ export const getMasterclassesTableFields = getLessonsTableFields;
 export const getPerformancesTableFields = performance => returnUndefinedIfEmptyObject({
   ...(performance.name && { name: performance.name }),
   ...(performance.details && { details: performance.details }),
-  ...(performance.type && { type: performance.type }),
+  ...(performance.performance_type && { performance_type: performance.performance_type }),
 });
 
 const deleteEventSubtypeRecord = (eventId, subtype) => knex(subtype)
@@ -322,7 +322,7 @@ export const conditionallyUpdatePerformanceRecord = (performance, event, eventId
     return knex('performances')
       .where({ event_id: eventId })
       .update(performance)
-      .returning(['performance_id', 'name', 'details', 'type as performance_type'])
+      .returning(['performance_id', 'name', 'details', 'performance_type'])
       .then(resultArray => resultArray[0])
       .then(performancesResult => ({
         ...event,
@@ -333,7 +333,7 @@ export const conditionallyUpdatePerformanceRecord = (performance, event, eventId
   // we still want to return the full performance object
   return knex('performances')
     .where({ event_id: eventId })
-    .first('performance_id', 'name', 'details', 'type as performance_type')
+    .first('performance_id', 'name', 'details', 'performance_type')
     .then(performancesResult => ({
       ...event,
       ...performancesResult,
