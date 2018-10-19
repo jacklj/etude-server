@@ -40,4 +40,13 @@ export const seed = (knex) => knex('events') // eslint-disable-line import/prefe
         .select('location_id'),
       rating: 3,
     },
+    {
+      start: moment('2018-11-10 18:00:00'),
+      end: moment('2018-11-10 22:30:00'),
+      type: EVENT_TYPES.PERFORMANCE,
+      location_id: knex('locations')
+        .where({ name: 'Garsington Opera' })
+        .select('location_id'),
+      rating: 4,
+    },
   ]);
