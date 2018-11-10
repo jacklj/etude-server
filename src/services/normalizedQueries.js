@@ -122,11 +122,36 @@ const getEventsNotes = events => {
     .then(notes => convertArrayIntoObjectIndexedByIds(notes.rows, 'note_id'));
 };
 
-export const getEventsNotesAndAddToResponse = (events, response) => getEventsNotes(events)
-  .then(notesObject => {
-    if (!notesObject || _.isEmpty(notesObject)) return;
-    response.notes = notesObject;
-  });
+const getRepOrExerciseInstanceNotes = repOrExerciseInstances => {
+  if (_.isEmpty(repOrExerciseInstances)) return Promise.resolve(undefined);
+  const repOrExerciseInstanceIdsAsString = Object.values(repOrExerciseInstances)
+    .map(instance => instance.rep_or_exercise_instance_id)
+    .toString();
+  return knex.raw(`
+    SELECT
+      note_id, note, score, type, rep_or_exercise_instance_id
+    FROM
+      notes
+    WHERE
+      rep_or_exercise_instance_id IN (${repOrExerciseInstanceIdsAsString})
+  `)
+    .then(notes => convertArrayIntoObjectIndexedByIds(notes.rows, 'note_id'));
+};
+
+export const getNotesAndAddToResponse = (
+  events,
+  repOrExerciseInstances,
+  response,
+) => getEventsNotes(events)
+  .then(eventsNotes => getRepOrExerciseInstanceNotes(repOrExerciseInstances)
+    .then(instanceNotes => {
+      const notes = {
+        ...eventsNotes,
+        ...instanceNotes,
+      };
+      if (_.isEmpty(notes)) return;
+      response.notes = notes;
+    }));
 
 const getPeopleAtEvents = events => {
   if (_.isEmpty(events)) return Promise.resolve(undefined);

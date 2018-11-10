@@ -23,7 +23,7 @@ import {
   getEventsRepOrExerciseInstancesAndAddToResponse,
   getInstanceRepertoireAndAddToResponse,
   getInstanceExercisesAndAddToResponse,
-  getEventsNotesAndAddToResponse,
+  getNotesAndAddToResponse,
   getEventsAndRepertoireAndExercisePeopleAndAddToResponse,
   getPeopleAtEventsAndAddToResponse,
 } from '../../services/normalizedQueries';
@@ -57,7 +57,7 @@ eventsRouter.get('/', (req, res) => {
     .then(() => getEventsRepOrExerciseInstancesAndAddToResponse(response.events, response))
     .then(() => getInstanceRepertoireAndAddToResponse(response.rep_or_exercise_instances, response))
     .then(() => getInstanceExercisesAndAddToResponse(response.rep_or_exercise_instances, response))
-    .then(() => getEventsNotesAndAddToResponse(response.events, response))
+    .then(() => getNotesAndAddToResponse(response.events, response.rep_or_exercise_instances, response))
     .then(() => getEventsAndRepertoireAndExercisePeopleAndAddToResponse(response))
     .then(() => res.status(200).json(response))
     .catch(error => {
@@ -87,7 +87,7 @@ eventsRouter.get('/:id', (req, res) => {
     .then(() => getEventsRepOrExerciseInstancesAndAddToResponse(response.events, response))
     .then(() => getInstanceRepertoireAndAddToResponse(response.rep_or_exercise_instances, response))
     .then(() => getInstanceExercisesAndAddToResponse(response.rep_or_exercise_instances, response))
-    .then(() => getEventsNotesAndAddToResponse(response.events, response))
+    .then(() => getNotesAndAddToResponse(response.events, response.rep_or_exercise_instances, response))
     .then(() => getEventsAndRepertoireAndExercisePeopleAndAddToResponse(response))
     .then(() => res.status(200).json(response))
     .catch(error => {
