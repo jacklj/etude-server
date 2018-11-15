@@ -12,7 +12,7 @@ router.get('/api/repertoire', (req, res) => {
   knex.raw(`
     SELECT
       repertoire_id, name, composer_id, composition_date, larger_work,
-      character_that_sings_it
+      character_that_sings_it, type
     FROM
       repertoire
   `)
@@ -68,7 +68,8 @@ router.get('/api/repertoire/upcoming', (req, res) => {
         repertoire.composer_id,
         repertoire.composition_date,
         repertoire.larger_work,
-        repertoire.character_that_sings_it
+        repertoire.character_that_sings_it,
+        repertoire.type
       FROM events
       INNER JOIN rep_or_exercise_instances ON rep_or_exercise_instances.event_id=events.event_id
       INNER JOIN repertoire ON rep_or_exercise_instances.repertoire_id=repertoire.repertoire_id
@@ -116,7 +117,8 @@ router.get('/api/repertoire/upcoming', (req, res) => {
         repertoire.composer_id,
         repertoire.composition_date,
         repertoire.larger_work,
-        repertoire.character_that_sings_it
+        repertoire.character_that_sings_it,
+        repertoire.type
       FROM other_rep_to_work_on
       INNER JOIN repertoire ON other_rep_to_work_on.repertoire_id=repertoire.repertoire_id
       WHERE other_rep_to_work_on.deadline > CURRENT_DATE;
@@ -147,6 +149,27 @@ router.get('/api/repertoire/upcoming', (req, res) => {
       };
     })
     .then(() => res.status(200).json(response))
+    .catch(error => {
+      console.warn(error); // eslint-disable-line no-console
+      res.status(400).json(error);
+    });
+});
+
+router.post('/api/repertoire', (req, res) => {
+  const newRepertoire = req.body;
+  knex('repertoire')
+    .insert([newRepertoire])
+    .returning(['repertoire_id', 'name', 'composer_id', 'composition_date',
+      'larger_work', 'character_that_sings_it', 'type'])
+    .then(resultArray => {
+      const normalizedResponse = {
+        repertoire: convertArrayIntoObjectIndexedByIds(resultArray, 'repertoire_id'),
+      };
+      console.log( // eslint-disable-line no-console
+        `New repertoire added (repertoire_id: ${resultArray[0].repertoire_id})`,
+      );
+      res.status(200).json(normalizedResponse);
+    })
     .catch(error => {
       console.warn(error); // eslint-disable-line no-console
       res.status(400).json(error);
