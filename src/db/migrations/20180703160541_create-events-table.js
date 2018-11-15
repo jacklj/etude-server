@@ -1,5 +1,5 @@
 import {
-  EVENT_TYPES, NOTE_TYPES, PERFORMANCE_TYPES,
+  EVENT_TYPES, NOTE_TYPES, PERFORMANCE_TYPES, REPERTOIRE_TYPES,
 } from '../../services/constants';
 
 exports.up = knex => knex.schema
@@ -117,6 +117,16 @@ exports.up = knex => knex.schema
       .integer('composer_id')
       .references('person_id')
       .inTable('people');
+    table.enu('type', [
+      REPERTOIRE_TYPES.OPERA.ARIA,
+      REPERTOIRE_TYPES.OPERA.RECIT,
+      REPERTOIRE_TYPES.OPERA.RECIT_AND_ARIA,
+      REPERTOIRE_TYPES.ORATORIO.ARIA,
+      REPERTOIRE_TYPES.ORATORIO.RECIT,
+      REPERTOIRE_TYPES.ORATORIO.RECIT_AND_ARIA,
+      REPERTOIRE_TYPES.CONCERT_ARIA,
+      REPERTOIRE_TYPES.SONG,
+    ]);
     table.date('composition_date');
     table.string('larger_work');
     table.string('character_that_sings_it');
