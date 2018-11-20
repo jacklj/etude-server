@@ -31,4 +31,35 @@ router.get('/api/exercises', (req, res) => {
     });
 });
 
+router.post('/api/exercises', (req, res) => {
+  const newExercise = req.body;
+  knex('exercises')
+    .insert([newExercise])
+    .returning([
+      'exercise_id',
+      'name',
+      'score',
+      'range_lowest_note',
+      'range_highest_note',
+      'details',
+      'teacher_who_created_it_id',
+      'created_at',
+      'updated_at',
+    ])
+    .then(resultArray => {
+      const normalizedResponse = {
+        exercises: convertArrayIntoObjectIndexedByIds(resultArray, 'exercise_id'),
+      };
+      console.log(
+        // eslint-disable-line no-console
+        `New exercise added (repertoire_id: ${resultArray[0].exercise_id})`,
+      );
+      res.status(200).json(normalizedResponse);
+    })
+    .catch(error => {
+      console.warn(error); // eslint-disable-line no-console
+      res.status(400).json(error);
+    });
+});
+
 export default router;
