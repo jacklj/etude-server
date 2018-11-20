@@ -43,4 +43,24 @@ router.get('/api/people/teachers', (req, res) => {
     });
 });
 
+router.post('/api/people', (req, res) => {
+  const newPerson = req.body;
+  knex('people')
+    .insert([newPerson])
+    .returning(['person_id', 'first_name', 'surname', 'role'])
+    .then(resultArray => {
+      const normalizedResponse = {
+        people: convertArrayIntoObjectIndexedByIds(resultArray, 'person_id'),
+      };
+      console.log( // eslint-disable-line no-console
+        `New person added (person_id: ${resultArray[0].person_id})`,
+      );
+      res.status(200).json(normalizedResponse);
+    })
+    .catch(error => {
+      console.warn(error); // eslint-disable-line no-console
+      res.status(400).json(error);
+    });
+});
+
 export default router;
