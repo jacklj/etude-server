@@ -12,7 +12,7 @@ router.get('/api/repertoire', (req, res) => {
   knex.raw(`
     SELECT
       repertoire_id, name, composer_id, composition_date, larger_work,
-      character_that_sings_it, type
+      character_that_sings_it, type, created_at, updated_at
     FROM
       repertoire
   `)
@@ -160,7 +160,7 @@ router.post('/api/repertoire', (req, res) => {
   knex('repertoire')
     .insert([newRepertoire])
     .returning(['repertoire_id', 'name', 'composer_id', 'composition_date',
-      'larger_work', 'character_that_sings_it', 'type'])
+      'larger_work', 'character_that_sings_it', 'type', 'created_at', 'updated_at'])
     .then(resultArray => {
       const normalizedResponse = {
         repertoire: convertArrayIntoObjectIndexedByIds(resultArray, 'repertoire_id'),

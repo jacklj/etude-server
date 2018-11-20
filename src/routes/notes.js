@@ -10,7 +10,7 @@ router.post('/api/notes', (req, res) => {
   const note = req.body;
   knex('notes')
     .insert([note])
-    .returning(['note_id', 'note', 'score', 'type', 'event_id', 'rep_or_exercise_instance_id'])
+    .returning(['note_id', 'note', 'score', 'type', 'event_id', 'rep_or_exercise_instance_id', 'created_at', 'updated_at'])
     .then(resultArray => {
       const normalizedResponse = {
         notes: convertArrayIntoObjectIndexedByIds(resultArray, 'note_id'),
@@ -30,7 +30,7 @@ router.put('/api/notes/:id', (req, res) => {
   knex('notes')
     .where({ note_id: noteId })
     .update(note)
-    .returning(['note_id', 'note', 'score', 'type', 'event_id', 'rep_or_exercise_instance_id'])
+    .returning(['note_id', 'note', 'score', 'type', 'event_id', 'rep_or_exercise_instance_id', 'created_at', 'updated_at'])
     .then(resultArray => {
       const normalizedResponse = {
         notes: convertArrayIntoObjectIndexedByIds(resultArray, 'note_id'),

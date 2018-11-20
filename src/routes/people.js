@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/api/people', (req, res) => {
   knex.raw(`
     SELECT
-      person_id, first_name, surname, role
+      person_id, first_name, surname, role, created_at, updated_at
     FROM
       people
   `)
@@ -26,7 +26,7 @@ router.get('/api/people', (req, res) => {
 router.get('/api/people/teachers', (req, res) => {
   knex.raw(`
     SELECT
-      person_id, first_name, surname, role
+      person_id, first_name, surname, role, created_at, updated_at
     FROM
       people
     WHERE
@@ -47,7 +47,7 @@ router.post('/api/people', (req, res) => {
   const newPerson = req.body;
   knex('people')
     .insert([newPerson])
-    .returning(['person_id', 'first_name', 'surname', 'role'])
+    .returning(['person_id', 'first_name', 'surname', 'role', 'created_at', 'updated_at'])
     .then(resultArray => {
       const normalizedResponse = {
         people: convertArrayIntoObjectIndexedByIds(resultArray, 'person_id'),

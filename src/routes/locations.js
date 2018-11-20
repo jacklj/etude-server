@@ -11,7 +11,7 @@ router.get('/api/locations', (req, res) => {
       `
     SELECT
       location_id, name, address_line_1, address_line_2, address_line_3,
-      town_city, postcode, website
+      town_city, postcode, website, created_at, updated_at
     FROM
       locations
     `,
@@ -38,6 +38,8 @@ router.post('/api/locations', (req, res) => {
       'town_city',
       'postcode',
       'website',
+      'created_at',
+      'updated_at',
     ])
     .then(resultArray => {
       const normalizedResponse = {
