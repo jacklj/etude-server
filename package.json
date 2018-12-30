@@ -37,6 +37,7 @@
     "knex:seed:make": "npm run build && cd build && knex seed:make",
     "knex:migrate:latest": "npm run build && cd build && knex migrate:latest",
     "knex:migrate:rollback": "npm run build && cd build && knex migrate:rollback",
-    "knex:migrate:make": "npm run build && cd build && knex migrate:make"
+    "knex:migrate:make": "npm run build && cd build && knex migrate:make",
+    "postinstall": "yarn install && yarn build"
   }
 }
