@@ -22,6 +22,8 @@
     "pg": "^7.4.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/node": "^7.2.2",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^17.0.0",
     "eslint-plugin-import": "^2.12.0",
@@ -33,11 +35,12 @@
     "build-babel": "babel -d ./build ./src -s",
     "build": "yarn clean && yarn build-babel",
     "start:prod": "node ./build/server.js",
+    "knex": "babel-node node_modules/.bin/knex --knexfile=./src/knexfile.js",
+    "knex:seed:make": "yarn knex seed:make",
+    "knex:migrate:make": "yarn knex migrate:make",
     "knex:seed:run": "knex --knexfile=./build/knexfile.js seed:run",
-    "knex:seed:make": "yarn build && cd build && knex seed:make",
     "knex:migrate:latest": "knex --knexfile=./build/knexfile.js migrate:latest",
     "knex:migrate:rollback": "knex --knexfile=./build/knexfile.js migrate:rollback",
-    "knex:migrate:make": "yarn build && cd build && knex migrate:make",
     "postinstall": "yarn build"
   }
 }
