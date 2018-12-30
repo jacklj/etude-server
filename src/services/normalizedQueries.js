@@ -16,7 +16,7 @@ const getEventsLocations = events => {
   return knex.raw(`
     SELECT
       location_id, name, address_line_1, address_line_2, address_line_3,
-      town_city, postcode, website
+      town_city, postcode, website, created_at, updated_at
     FROM
       locations
     WHERE
@@ -63,7 +63,7 @@ const getInstancesRepertoire = repOrExerciseInstances => {
   return knex.raw(`
     SELECT
       repertoire_id, name, composer_id, composition_date, larger_work,
-      character_that_sings_it
+      character_that_sings_it, type, created_at, updated_at
     FROM
       repertoire
     WHERE
@@ -91,7 +91,7 @@ const getInstanceExercises = repOrExerciseInstances => {
   return knex.raw(`
     SELECT
       exercise_id, name, score, range_lowest_note, range_highest_note,
-      details, teacher_who_created_it_id
+      details, teacher_who_created_it_id, created_at, updated_at
     FROM
       exercises
     WHERE
@@ -113,7 +113,7 @@ const getEventsNotes = events => {
     .toString();
   return knex.raw(`
     SELECT
-      note_id, note, score, type, event_id
+      note_id, note, score, type, created_at, updated_at, event_id
     FROM
       notes
     WHERE
@@ -129,7 +129,7 @@ const getRepOrExerciseInstanceNotes = repOrExerciseInstances => {
     .toString();
   return knex.raw(`
     SELECT
-      note_id, note, score, type, rep_or_exercise_instance_id
+      note_id, note, score, type, created_at, updated_at, rep_or_exercise_instance_id
     FROM
       notes
     WHERE
@@ -160,7 +160,7 @@ const getPeopleAtEvents = events => {
     .toString();
   return knex.raw(`
     SELECT
-      person_at_event_id, event_id, person_id
+      person_at_event_id, event_id, person_id, created_at, updated_at
     FROM
       people_at_events
     WHERE
@@ -208,7 +208,7 @@ const getEventsAndRepertoireAndExercisePeople = response => {
   const peopleIdsAsString = generateStringListForSqlQuery(peopleIds);
   return knex.raw(`
     SELECT
-      person_id, first_name, surname, role
+      person_id, first_name, surname, role, created_at, updated_at
     FROM
       people
     WHERE
