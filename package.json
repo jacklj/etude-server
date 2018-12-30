@@ -35,12 +35,13 @@
     "build-babel": "babel -d ./build ./src -s",
     "build": "yarn clean && yarn build-babel",
     "start:prod": "node ./build/server.js",
-    "knex": "babel-node node_modules/.bin/knex --knexfile=./src/knexfile.js",
-    "knex:seed:make": "yarn knex seed:make",
-    "knex:migrate:make": "yarn knex migrate:make",
-    "knex:seed:run": "knex --knexfile=./build/knexfile.js seed:run",
-    "knex:migrate:latest": "knex --knexfile=./build/knexfile.js migrate:latest",
-    "knex:migrate:rollback": "knex --knexfile=./build/knexfile.js migrate:rollback",
+    "knex_build": "knex --knexfile=./build/knexfile.js",
+    "knex_src": "babel-node node_modules/.bin/knex --knexfile=./src/knexfile.js",
+    "knex:seed:make": "yarn knex_src seed:make",
+    "knex:migrate:make": "yarn knex_src migrate:make",
+    "knex:seed:run": "yarn knex_build seed:run",
+    "knex:migrate:latest": "yarn knex_build migrate:latest",
+    "knex:migrate:rollback": "yarn knex_build migrate:rollback",
     "postinstall": "yarn build"
   }
 }
