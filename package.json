@@ -33,6 +33,7 @@
   "scripts": {
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s",
+    "//": "NB `-s` flag builds source-maps",
     "build": "yarn clean && yarn build-babel",
     "//": "build: deletes the contents of /build, then uses babel to transpile from /src -> /build",
     "start:prod": "node ./build/server.js",
