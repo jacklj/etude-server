@@ -37,6 +37,11 @@
     "//": "build: deletes the contents of /build, then uses babel to transpile from /src -> /build",
     "start:prod": "node ./build/server.js",
     "//": "start:prod: this is called by heroku to start the server, as specified in the Procfile",
+    "start:dev": "nodemon --exec babel-node src/server.js",
+    "//": [
+      "start:local: uses nodemon to reload the server automatically when changes to the code are",
+      "detected. Runs the es6 code (not transpiled) using babel-node (instead of node)."
+    ],
     "knex_build": "knex --knexfile=./build/knexfile.js",
     "knex_src": "babel-node node_modules/.bin/knex --knexfile=./src/knexfile.js",
     "//": [
