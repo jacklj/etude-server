@@ -42,12 +42,12 @@
       "start:local: uses nodemon to reload the server automatically when changes to the code are",
       "detected. Runs the es6 code (not transpiled) using babel-node (instead of node)."
     ],
-    "knex_build": "knex --knexfile=./build/knexfile.js",
-    "knex_src": "babel-node node_modules/.bin/knex --knexfile=./src/knexfile.js",
+    "knex:build": "knex --knexfile=./build/knexfile.js",
+    "knex:src": "babel-node node_modules/.bin/knex --knexfile=./src/knexfile.js",
     "//": [
-      "knex_build and knex_src are two convenience scripts called by other scripts.",
+      "knex:build and knex:src are two convenience scripts called by other scripts.",
       "Both specify the location of the relevant knexfile to run knex with.",
-      "knex_build runs knex using the transpiled knexfile, in /build/db, whearas knex_src",
+      "knex:build runs knex using the transpiled knexfile, in /build/db, whearas knex:src",
       "uses the es6 knexfile in /src/db, by running knex wit babel-node instead of node (as node ",
       "doesn't support es6).",
       "Using the knexfile in /src/db means the migration and seed files are created in the",
@@ -58,11 +58,11 @@
       "transpiled knexfile. To keep local and prod iso, we use this method for migrations and seeding",
       "on local too. N.B. therefore before migrating or seeding locally, you must first do `yarn build`"
     ],
-    "knex:seed:make": "yarn knex_src seed:make",
-    "knex:migrate:make": "yarn knex_src migrate:make",
-    "knex:seed:run": "yarn knex_build seed:run",
-    "knex:migrate:latest": "yarn knex_build migrate:latest",
-    "knex:migrate:rollback": "yarn knex_build migrate:rollback",
+    "knex:seed:make": "yarn knex:src seed:make",
+    "knex:migrate:make": "yarn knex:src migrate:make",
+    "knex:seed:run": "yarn knex:build seed:run",
+    "knex:migrate:latest": "yarn knex:build migrate:latest",
+    "knex:migrate:rollback": "yarn knex:build migrate:rollback",
     "//": [
       "NB on local, before calling `knex:seed:run`, `knex:migrate:latest` or `knex:migrate:rollback`",
       "you must first do `yarn build`"
