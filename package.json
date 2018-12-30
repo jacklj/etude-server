@@ -32,7 +32,7 @@
     "clean": "rm -rf build && mkdir build",
     "build-babel": "babel -d ./build ./src -s",
     "build": "yarn clean && yarn build-babel",
-    "start": "node ./build/server.js",
+    "start:prod": "node ./build/server.js",
     "knex:seed:run": "knex --knexfile=./build/knexfile.js seed:run",
     "knex:seed:make": "yarn build && cd build && knex seed:make",
     "knex:migrate:latest": "knex --knexfile=./build/knexfile.js migrate:latest",
