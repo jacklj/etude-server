@@ -213,6 +213,8 @@ exports.up = knex => knex.schema
       events.in_progress,
       events.rating,
       events.type,
+      events.created_at,
+      events.updated_at,
       performances.performance_id,
       performances.name,
       performances.performance_type,
