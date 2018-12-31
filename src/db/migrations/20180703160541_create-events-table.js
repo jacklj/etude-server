@@ -24,6 +24,9 @@ exports.up = knex => knex.schema
     table.enu('type', [
       EVENT_TYPES.LESSON,
       EVENT_TYPES.PRACTICE,
+      EVENT_TYPES.COACHING,
+      EVENT_TYPES.REHEARSAL,
+      EVENT_TYPES.CHOIR_REHEARSAL,
       EVENT_TYPES.MASTERCLASS,
       EVENT_TYPES.PERFORMANCE, // covers all gigs
       EVENT_TYPES.THOUGHT,
@@ -86,6 +89,8 @@ exports.up = knex => knex.schema
       PERFORMANCE_TYPES.RECITAL,
       PERFORMANCE_TYPES.COMPETITION,
       PERFORMANCE_TYPES.AUDITION,
+      PERFORMANCE_TYPES.CHOIR_SERVICE,
+      PERFORMANCE_TYPES.CHOIR_CONCERT,
     ]);
     table
       .integer('event_id')
