@@ -27,6 +27,46 @@ router.get('/api/repertoire', (req, res) => {
     });
 });
 
+router.get('/api/repertoire/:id', (req, res) => {
+  const repId = req.params.id;
+  const response = {};
+  knex.raw(`
+    SELECT
+      repertoire_id, name, composer_id, composition_date, larger_work,
+      character_that_sings_it, type, created_at, updated_at
+    FROM
+      repertoire
+    WHERE
+      repertoire_id=${repId}
+  `)
+    .then(result => {
+      const repertoireArray = result.rows;
+      response.repertoire = convertArrayIntoObjectIndexedByIds(repertoireArray, 'repertoire_id');
+    })
+    .then(() => knex.raw(`
+      SELECT
+        people.person_id,
+        people.first_name,
+        people.surname,
+        people.role
+      FROM 
+        repertoire
+      INNER JOIN people ON repertoire.composer_id=people.person_id
+      WHERE
+        repertoire_id=${repId}
+    `))
+    .then(result => {
+      const people = result.rows;
+      response.people = convertArrayIntoObjectIndexedByIds(people, 'person_id');
+    })
+    .then(() => res.status(200).json(response))
+    .catch(error => {
+      console.warn(error); // eslint-disable-line no-console
+      res.status(400).json(error);
+    });
+});
+
+
 // We do need this endpoint, in case the upcoming end point is navigated to directly, by url
 // Also to make sure we've got the other_rep_to_work_on.
 // Trying to do pure queries, no 'IN(...string list...)'
